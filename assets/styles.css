@@ -234,7 +234,37 @@ body {
     overflow: hidden;
 }
 
-#customers-table { margin-bottom: 0 !important; }
+#customers-table { 
+    margin-bottom: 0 !important;
+    user-select: none;
+}
+
+/* Otimização para cliques rápidos na tabela */
+.dash-table-container {
+    pointer-events: auto !important;
+}
+
+.dash-table-container .dash-spreadsheet-inner td {
+    transition: background-color 0.15s ease;
+}
+
+/* Célula de ações - otimizada para múltiplos cliques */
+.dash-table-container .dash-spreadsheet-inner td[data-dash-column="AÇÕES"] {
+    cursor: pointer !important;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.dash-table-container .dash-spreadsheet-inner td[data-dash-column="AÇÕES"]:hover {
+    background-color: #eff6ff !important;
+    transition: background-color 0.1s ease;
+}
+
+.dash-table-container .dash-spreadsheet-inner td[data-dash-column="AÇÕES"]:active {
+    background-color: #dbeafe !important;
+    transform: scale(0.98);
+    transition: all 0.05s ease;
+}
 
 .dash-table-container .column-header--sort {
     display: inline-flex;

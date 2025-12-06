@@ -187,6 +187,7 @@ app.layout = dbc.Container([
                 columns=[],
                 data=[],
                 markdown_options={'html': True},
+                active_cell=None,
                 style_table={
                     'overflowX': 'auto',
                     'minWidth': '100%'
@@ -230,7 +231,8 @@ app.layout = dbc.Container([
                         'if': {'column_id': 'AÇÕES'},
                         'textAlign': 'center',
                         'fontWeight': '700',
-                        'color': '#2563eb'
+                        'color': '#2563eb',
+                        'cursor': 'pointer'
                     },
                     {
                         'if': {
@@ -510,12 +512,14 @@ def export_csv(n_clicks, status_filter, tech_filter, month_filter, search_text):
     [State("customers-table", "data"),
      State("modal-edit", "is_open"),
      State("selected-customer-store", "data"),
-     State("edit-mode-store", "data")]
+     State("edit-mode-store", "data")],
+    prevent_initial_call=True
 )
 def toggle_modal(active_cell, btn_new, btn_cancel, btn_save, table_data, is_open, selected_customer, edit_mode):
     ctx = callback_context
     if not ctx.triggered:
-        return False, None, None, "", "", None, None, None, None, [], "", ""
+        return no_update
+    
     trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
 
     # Fechar modal
@@ -543,26 +547,27 @@ def toggle_modal(active_cell, btn_new, btn_cancel, btn_save, table_data, is_open
     if trigger_id == "customers-table" and active_cell:
         if active_cell.get("column_id") == "AÇÕES":
             row_idx = active_cell.get("row")
-            row = table_data[row_idx]
-            auto_raw = str(row.get("AUTO_RAW", "")).lower()
-            auto_val = ["yes"] if auto_raw in ["yes", "sim", "y"] else []
-            return (
-                True,
-                row.get("CLIENTE"),
-                "edit",
-                f"Editar Cliente",
-                row.get("CLIENTE", ""),
-                row.get("STATUS_RAW"),
-                row.get("PISCINEIRO_RAW"),
-                row.get("VALOR_RAW"),
-                row.get("METODO_RAW"),
-                auto_val,
-                row.get("ULTIMA_RAW", ""),
-                row.get("PROXIMA_RAW", "")
-            )
+            if row_idx is not None and row_idx < len(table_data):
+                row = table_data[row_idx]
+                auto_raw = str(row.get("AUTO_RAW", "")).lower()
+                auto_val = ["yes"] if auto_raw in ["yes", "sim", "y"] else []
+                return (
+                    True,
+                    row.get("CLIENTE"),
+                    "edit",
+                    f"Editar Cliente",
+                    row.get("CLIENTE", ""),
+                    row.get("STATUS_RAW"),
+                    row.get("PISCINEIRO_RAW"),
+                    row.get("VALOR_RAW"),
+                    row.get("METODO_RAW"),
+                    auto_val,
+                    row.get("ULTIMA_RAW", ""),
+                    row.get("PROXIMA_RAW", "")
+                )
 
-    # Estado padrão
-    return is_open, selected_customer, edit_mode, "", "", None, None, None, None, [], "", ""
+    # Manter estado atual se nenhuma ação específica
+    return no_update
 
 
 # Salvar alterações (feedback apenas; fechamento do modal é feito pelo callback de toggle)
