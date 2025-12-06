@@ -25,7 +25,7 @@ O projeto já está configurado com todos os arquivos necessários:
 ```bash
 git add .
 git commit -m "Estrutura de produção configurada para Render"
-git push origin master
+git push origin main
 ```
 
 #### 3. **Criar Web Service no Render**
@@ -46,7 +46,7 @@ git push origin master
 4. Configure:
    - **Name**: `dashboard-lacqua-azzurra`
    - **Region**: Oregon (Free)
-   - **Branch**: `master`
+   - **Branch**: `main`
    - **Runtime**: Python 3
    - **Build Command**: 
      ```
@@ -118,7 +118,7 @@ No painel do Render você pode:
 
 ### 🔄 Atualizações Automáticas
 
-Qualquer push para a branch `master` irá:
+Qualquer push para a branch `main` irá:
 1. Trigger automático de novo deploy
 2. Rebuild da aplicação
 3. Deploy sem downtime
