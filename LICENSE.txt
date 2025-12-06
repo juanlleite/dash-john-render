@@ -1,0 +1,67 @@
+# LICENSE - L'Acqua Azzurra Pools Dashboard
+
+## Licença de Uso
+
+Este dashboard foi desenvolvido especificamente para uso interno da **L'Acqua Azzurra Pools**.
+
+### Permissões
+
+✅ **Permitido:**
+- Uso interno pela L'Acqua Azzurra Pools
+- Modificações e personalizações
+- Criação de cópias de backup
+- Compartilhamento interno entre funcionários
+- Melhorias e adaptações conforme necessário
+
+### Restrições
+
+❌ **Não Permitido sem autorização:**
+- Distribuição pública do código
+- Uso comercial por terceiros
+- Revenda ou sublicenciamento
+- Remoção de créditos do desenvolvedor
+
+### Garantia
+
+Este software é fornecido "como está", sem garantias de qualquer tipo, expressas ou implícitas, incluindo, mas não se limitando a garantias de comercialização, adequação a um propósito específico e não violação.
+
+### Responsabilidade
+
+Em nenhuma circunstância os autores serão responsáveis por quaisquer reivindicações, danos ou outras responsabilidades, seja em ação de contrato, delito ou de outra forma, decorrentes de, fora de ou em conexão com o software ou o uso ou outras negociações no software.
+
+### Dados
+
+- A responsabilidade pela segurança e backup dos dados é do usuário
+- O desenvolvedor não se responsabiliza por perda de dados
+- Recomenda-se fazer backup regular do arquivo `data_storage.json`
+
+### Suporte
+
+Suporte técnico pode ser solicitado, mas não é garantido.
+
+---
+
+## Copyright
+
+© 2024 L'Acqua Azzurra Pools  
+Todos os direitos reservados.
+
+---
+
+## Tecnologias de Terceiros
+
+Este projeto utiliza as seguintes bibliotecas de código aberto:
+
+- **Dash** - MIT License
+- **Plotly** - MIT License
+- **Pandas** - BSD 3-Clause License
+- **Bootstrap** - MIT License
+
+Consulte as licenças individuais de cada biblioteca para mais detalhes.
+
+---
+
+**Desenvolvido com ❤️ para L'Acqua Azzurra Pools**
+
+Data de Criação: 04/12/2024  
+Versão: 1.0.0
