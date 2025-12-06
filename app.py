@@ -3,6 +3,7 @@ Painel L'Acqua Azzurra - Dashboard Profissional
 Dashboard interativo para gerenciamento de clientes e manutenções de piscinas
 """
 
+import os
 import dash
 from dash import dcc, html, Input, Output, State, dash_table, callback_context, no_update
 import dash_bootstrap_components as dbc
@@ -19,6 +20,9 @@ app = dash.Dash(
     suppress_callback_exceptions=True,
     title="Painel L'Acqua Azzurra"
 )
+
+# Expor o servidor Flask para WSGI (Gunicorn, Render, etc.)
+server = app.server
 
 # Inicializar processador de dados
 CSV_PATH = "L'Acqua Azzurra Pools Customer report-171125135257 - Sheet.csv"
@@ -686,12 +690,18 @@ def save_customer_data(n_clicks, customer_name, edit_mode, name, status, tech, r
 
 
 if __name__ == "__main__":
+    # Configurações de ambiente
+    DEBUG = os.getenv("DASH_DEBUG", "True").lower() == "true"
+    HOST = os.getenv("HOST", "127.0.0.1")
+    PORT = int(os.getenv("PORT", 8050))
+    
     print("\n" + "="*60)
     print("🏊 Painel L'Acqua Azzurra")
     print("="*60)
-    print("\n✨ Iniciando servidor do dashboard...")
-    print("📍 Acesse: http://127.0.0.1:8050")
+    print(f"\n✨ Iniciando servidor do dashboard...")
+    print(f"📍 Acesse: http://{HOST}:{PORT}")
+    print(f"🔧 Modo Debug: {DEBUG}")
     print("\n💡 Pressione CTRL+C para encerrar\n")
     print("="*60 + "\n")
     
-    app.run(debug=True, host="127.0.0.1", port=8050)
+    app.run(debug=DEBUG, host=HOST, port=PORT)

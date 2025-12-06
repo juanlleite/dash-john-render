@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: dashboard-lacqua-azzurra
+    env: python
+    region: oregon
+    plan: free
+    branch: master
+    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
+    startCommand: "gunicorn app:server --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.5
+      - key: DASH_DEBUG
+        value: false
+      - key: DASH_DEV_TOOLS_HOT_RELOAD
+        value: false

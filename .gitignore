@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Ambientes virtuais
+.venv/
+venv/
+ENV/
+env/
+.virtualenv/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs e databases temporários
+*.log
+*.sqlite
+*.db
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Arquivos de desenvolvimento
+.env
+.env.local
+*.backup
+*.bak
+*.tmp
+
+# Arquivos de dados sensíveis (manter apenas exemplo)
+# Descomente se não quiser versionar dados
+# data_storage.json
+# *.csv
