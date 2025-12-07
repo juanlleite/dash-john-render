@@ -517,13 +517,73 @@ body {
 }
 
 .CalendarMonth_caption {
-    font-size: 1rem !important;
-    font-weight: 600 !important;
+    font-size: 1.05rem !important;
+    font-weight: 700 !important;
     color: #1e293b !important;
     padding-bottom: 40px !important;
+    cursor: pointer !important;
+    transition: color 0.2s ease !important;
+    user-select: none !important;
+}
+
+.CalendarMonth_caption:hover {
+    color: #3b82f6 !important;
+}
+
+/* Melhorias na navegação de mês/ano */
+.DayPickerNavigation {
+    display: flex !important;
+    gap: 8px !important;
+}
+
+.DayPickerNavigation_button {
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    padding: 8px 12px !important;
+    background: white !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    width: 36px !important;
+    height: 36px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.DayPickerNavigation_button:hover {
+    border-color: #3b82f6 !important;
+    background: #eff6ff !important;
+    transform: scale(1.05) !important;
+}
+
+.DayPickerNavigation_button:active {
+    transform: scale(0.95) !important;
+}
+
+.DayPickerNavigation_svg {
+    fill: #475569 !important;
+    height: 18px !important;
+    width: 18px !important;
+}
+
+.DayPickerNavigation_button:hover .DayPickerNavigation_svg {
+    fill: #3b82f6 !important;
+}
+
+/* Estilização do seletor de mês/ano (quando visível) */
+.CalendarMonthGrid {
+    background: white !important;
+}
+
+.CalendarMonth {
+    padding: 16px !important;
 }
 
 .DayPicker_weekHeader {
+    color: #64748b !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+}
     color: #64748b !important;
     font-size: 0.85rem !important;
     font-weight: 600 !important;

@@ -314,6 +314,12 @@ app.layout = dbc.Container([
                         placeholder="Selecione a data",
                         display_format="DD/MM/YYYY",
                         first_day_of_week=1,
+                        month_format="MMMM YYYY",
+                        show_outside_days=True,
+                        with_portal=False,
+                        with_full_screen_portal=False,
+                        number_of_months_shown=1,
+                        minimum_nights=0,
                         className="custom-datepicker",
                         style={'width': '100%'}
                     )
@@ -325,6 +331,12 @@ app.layout = dbc.Container([
                         placeholder="Selecione a data",
                         display_format="DD/MM/YYYY",
                         first_day_of_week=1,
+                        month_format="MMMM YYYY",
+                        show_outside_days=True,
+                        with_portal=False,
+                        with_full_screen_portal=False,
+                        number_of_months_shown=1,
+                        minimum_nights=0,
                         className="custom-datepicker",
                         style={'width': '100%'}
                     )
