@@ -218,14 +218,14 @@ app.layout = dbc.Container([
                     'whiteSpace': 'normal'
                 },
                 style_cell_conditional=[
-                    {'if': {'column_id': 'CLIENTE'}, 'minWidth': '220px', 'maxWidth': '260px'},
-                    {'if': {'column_id': 'STATUS'}, 'minWidth': '140px', 'maxWidth': '160px', 'textAlign': 'center'},
-                    {'if': {'column_id': 'PISCINEIRO'}, 'minWidth': '150px', 'maxWidth': '170px'},
-                    {'if': {'column_id': 'VALOR'}, 'minWidth': '110px', 'maxWidth': '120px', 'textAlign': 'center'},
-                    {'if': {'column_id': 'MÉTODO'}, 'minWidth': '150px', 'maxWidth': '170px'},
-                    {'if': {'column_id': 'AUTO PAY'}, 'minWidth': '120px', 'maxWidth': '130px', 'textAlign': 'center'},
-                    {'if': {'column_id': 'ÚLTIMA TROCA'}, 'minWidth': '130px', 'maxWidth': '140px'},
-                    {'if': {'column_id': 'PRÓXIMA TROCA'}, 'minWidth': '130px', 'maxWidth': '140px'}
+                    {'if': {'column_id': 'CLIENTE'}, 'minWidth': '200px', 'maxWidth': '240px'},
+                    {'if': {'column_id': 'STATUS'}, 'minWidth': '130px', 'maxWidth': '150px', 'textAlign': 'center'},
+                    {'if': {'column_id': 'PISCINEIRO'}, 'minWidth': '140px', 'maxWidth': '160px'},
+                    {'if': {'column_id': 'VALOR'}, 'minWidth': '100px', 'maxWidth': '110px', 'textAlign': 'center'},
+                    {'if': {'column_id': 'MÉTODO'}, 'minWidth': '140px', 'maxWidth': '160px'},
+                    {'if': {'column_id': 'AUTO PAY'}, 'minWidth': '110px', 'maxWidth': '120px', 'textAlign': 'center'},
+                    {'if': {'column_id': 'ÚLTIMA TROCA'}, 'minWidth': '120px', 'maxWidth': '130px'},
+                    {'if': {'column_id': 'PRÓXIMA TROCA'}, 'minWidth': '120px', 'maxWidth': '130px'}
                 ],
                 style_data_conditional=[
                     {
@@ -452,31 +452,32 @@ def update_dashboard(status_filter, tech_filter, month_filter, search_text, save
     table_df['ÚLTIMA TROCA'] = table_df['ÚLTIMA TROCA'].apply(lambda x: x if x else 'Não agendado')
     table_df['PRÓXIMA TROCA'] = table_df['PRÓXIMA TROCA'].apply(lambda x: x if x else 'Não agendado')
     
-    # Preparar dados da tabela (sem coluna de ações)
+    # Adicionar índice oculto para rastreamento
+    table_df['INDEX_HIDDEN'] = range(len(table_df))
+    
+    # Preparar dados da tabela
     table_data = table_df.to_dict('records')
     table_columns = [
         ({"name": col, "id": col, "presentation": "markdown"} 
          if col in ['STATUS', 'VALOR', 'MÉTODO', 'AUTO PAY'] 
          else {"name": col, "id": col})
-        for col in table_df.columns if not col.endswith('_RAW')
+        for col in table_df.columns if not col.endswith('_RAW') and col != 'INDEX_HIDDEN'
     ]
     
-    # Criar botões de ação para cada linha
+    # Criar botões de ação para cada linha (alinhados com a tabela)
     action_buttons = html.Div([
-        dbc.Row([
-            dbc.Col([
-                dbc.Button(
-                    [html.I(className="fas fa-edit me-2"), "Editar"],
-                    id={"type": "edit-btn", "index": idx},
-                    color="primary",
-                    size="sm",
-                    className="action-btn-edit",
-                    n_clicks=0
-                )
-            ], width="auto")
-        ], className="mb-2", justify="start")
-        for idx, row in enumerate(table_data)
-    ], className="action-buttons-wrapper")
+        html.Div([
+            dbc.Button(
+                [html.I(className="fas fa-edit me-2"), "Editar"],
+                id={"type": "edit-btn", "index": row['INDEX_HIDDEN']},
+                color="primary",
+                size="sm",
+                className="action-btn-edit",
+                n_clicks=0
+            )
+        ], className="action-btn-row")
+        for row in table_data
+    ], className="action-buttons-wrapper", id="action-buttons-list")
     
     return (
         f"${monthly_revenue:,.2f}",
