@@ -401,6 +401,24 @@ body {
 .metodo-na { color: #94a3b8; }
 
 /* Modal */
+.modal {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.modal.show {
+    backdrop-filter: blur(4px) !important;
+    background-color: rgba(15, 23, 42, 0.4) !important;
+}
+
+.modal-dialog {
+    margin: 0 auto !important;
+    display: flex !important;
+    align-items: center !important;
+    min-height: calc(100% - 1rem) !important;
+}
+
 .modal-content {
     border-radius: 14px !important;
     border: 1px solid #e2e8f0 !important;
