@@ -2,11 +2,27 @@
   "Aaron Robichaud CC": {
     "Status": "Active (routed)",
     "Route Tech": "Vini Penner",
-    "Route Price": 150.0,
+    "Route Price": 170.0,
     "Charge Method": "Advance",
     "Auto Charge": "No",
     "Ultima Troca": "",
     "Proxima Troca": ""
   },
-  "_new_customers": []
+  "_new_customers": [],
+  "_audit_log": [
+    {
+      "action": "update",
+      "name": "Aaron Robichaud CC",
+      "changes": {
+        "Status": "Active (routed)",
+        "Route Tech": "Vini Penner",
+        "Route Price": 170.0,
+        "Charge Method": "Advance",
+        "Auto Charge": "No",
+        "Ultima Troca": "",
+        "Proxima Troca": ""
+      },
+      "timestamp": "2025-12-06T13:59:30.445810"
+    }
+  ]
 }

@@ -5,7 +5,7 @@ Dashboard interativo para gerenciamento de clientes e manutenções de piscinas
 
 import os
 import dash
-from dash import dcc, html, Input, Output, State, dash_table, callback_context, no_update
+from dash import dcc, html, Input, Output, State, dash_table, callback_context, no_update, ALL
 import dash_bootstrap_components as dbc
 from data_processor import PoolDataProcessor
 import pandas as pd
@@ -177,21 +177,23 @@ app.layout = dbc.Container([
             )
         ], md=2)
     ], className="mb-3"),
-    # Tabela de Clientes
+    # Tabela de Clientes com botões de ação
     dcc.Loading(
         id="loading-table",
         type="default",
         children=html.Div([
-            dash_table.DataTable(
-                id="customers-table",
-                columns=[],
-                data=[],
-                markdown_options={'html': True},
-                active_cell=None,
-                style_table={
-                    'overflowX': 'auto',
-                    'minWidth': '100%'
-                },
+            html.Div(id="table-with-actions", children=[
+                dash_table.DataTable(
+                    id="customers-table",
+                    columns=[],
+                    data=[],
+                    markdown_options={'html': True},
+                    selected_rows=[],
+                    row_selectable='single',
+                    style_table={
+                        'overflowX': 'auto',
+                        'minWidth': '100%'
+                    },
                 style_header={
                     'backgroundColor': '#f8fafc',
                     'color': '#475569',
@@ -223,17 +225,9 @@ app.layout = dbc.Container([
                     {'if': {'column_id': 'MÉTODO'}, 'minWidth': '150px', 'maxWidth': '170px'},
                     {'if': {'column_id': 'AUTO PAY'}, 'minWidth': '120px', 'maxWidth': '130px', 'textAlign': 'center'},
                     {'if': {'column_id': 'ÚLTIMA TROCA'}, 'minWidth': '130px', 'maxWidth': '140px'},
-                    {'if': {'column_id': 'PRÓXIMA TROCA'}, 'minWidth': '130px', 'maxWidth': '140px'},
-                    {'if': {'column_id': 'AÇÕES'}, 'minWidth': '110px', 'maxWidth': '120px', 'textAlign': 'center'}
+                    {'if': {'column_id': 'PRÓXIMA TROCA'}, 'minWidth': '130px', 'maxWidth': '140px'}
                 ],
                 style_data_conditional=[
-                    {
-                        'if': {'column_id': 'AÇÕES'},
-                        'textAlign': 'center',
-                        'fontWeight': '700',
-                        'color': '#2563eb',
-                        'cursor': 'pointer'
-                    },
                     {
                         'if': {
                             'filter_query': '{STATUS} contains "Ativo"',
@@ -265,7 +259,9 @@ app.layout = dbc.Container([
                 page_action="native",
                 sort_action="native",
                 sort_mode="multi"
-            )
+            ),
+            html.Div(id="action-buttons-container")
+            ])
         ], className="table-container")
     ),
     
@@ -312,12 +308,26 @@ app.layout = dbc.Container([
             ], className="mb-3"),
             dbc.Row([
                 dbc.Col([
-                    html.Label("Última Troca", className="form-label"),
-                    dbc.Input(id="edit-ultima-troca", type="text", placeholder="DD/MM/AAAA")
+                    html.Label("Última Troca (Filtro)", className="form-label"),
+                    dcc.DatePickerSingle(
+                        id="edit-ultima-troca",
+                        placeholder="Selecione a data",
+                        display_format="DD/MM/YYYY",
+                        first_day_of_week=1,
+                        className="custom-datepicker",
+                        style={'width': '100%'}
+                    )
                 ], md=6),
                 dbc.Col([
-                    html.Label("Próxima Troca", className="form-label"),
-                    dbc.Input(id="edit-proxima-troca", type="text", placeholder="DD/MM/AAAA")
+                    html.Label("Próxima Troca (Filtro)", className="form-label"),
+                    dcc.DatePickerSingle(
+                        id="edit-proxima-troca",
+                        placeholder="Selecione a data",
+                        display_format="DD/MM/YYYY",
+                        first_day_of_week=1,
+                        className="custom-datepicker",
+                        style={'width': '100%'}
+                    )
                 ], md=6)
             ])
         ]),
@@ -338,13 +348,14 @@ app.layout = dbc.Container([
 
 # ===== CALLBACKS =====
 
-# Atualizar KPIs e tabela
+# Atualizar KPIs, tabela e botões de ação
 @app.callback(
     [Output("kpi-revenue", "children"),
      Output("kpi-active-customers", "children"),
      Output("kpi-future-maintenance", "children"),
      Output("customers-table", "data"),
-     Output("customers-table", "columns")],
+     Output("customers-table", "columns"),
+     Output("action-buttons-container", "children")],
     [Input("status-filter", "value"),
      Input("tech-filter", "value"),
      Input("month-filter", "value"),
@@ -441,10 +452,7 @@ def update_dashboard(status_filter, tech_filter, month_filter, search_text, save
     table_df['ÚLTIMA TROCA'] = table_df['ÚLTIMA TROCA'].apply(lambda x: x if x else 'Não agendado')
     table_df['PRÓXIMA TROCA'] = table_df['PRÓXIMA TROCA'].apply(lambda x: x if x else 'Não agendado')
     
-    # Adicionar coluna de ações
-    table_df['AÇÕES'] = '🖊 Editar'
-    
-    # Preparar dados da tabela
+    # Preparar dados da tabela (sem coluna de ações)
     table_data = table_df.to_dict('records')
     table_columns = [
         ({"name": col, "id": col, "presentation": "markdown"} 
@@ -453,12 +461,30 @@ def update_dashboard(status_filter, tech_filter, month_filter, search_text, save
         for col in table_df.columns if not col.endswith('_RAW')
     ]
     
+    # Criar botões de ação para cada linha
+    action_buttons = html.Div([
+        dbc.Row([
+            dbc.Col([
+                dbc.Button(
+                    [html.I(className="fas fa-edit me-2"), "Editar"],
+                    id={"type": "edit-btn", "index": idx},
+                    color="primary",
+                    size="sm",
+                    className="action-btn-edit",
+                    n_clicks=0
+                )
+            ], width="auto")
+        ], className="mb-2", justify="start")
+        for idx, row in enumerate(table_data)
+    ], className="action-buttons-wrapper")
+    
     return (
         f"${monthly_revenue:,.2f}",
         f"{active_customers}",
         f"{future_maintenance}",
         table_data,
-        table_columns
+        table_columns,
+        action_buttons
     )
 
 
@@ -503,9 +529,9 @@ def export_csv(n_clicks, status_filter, tech_filter, month_filter, search_text):
      Output("edit-route-price", "value"),
      Output("edit-charge-method", "value"),
      Output("edit-auto-pay", "value"),
-     Output("edit-ultima-troca", "value"),
-     Output("edit-proxima-troca", "value")],
-    [Input("customers-table", "active_cell"),
+     Output("edit-ultima-troca", "date"),
+     Output("edit-proxima-troca", "date")],
+    [Input({"type": "edit-btn", "index": ALL}, "n_clicks"),
      Input("btn-novo-cliente", "n_clicks"),
      Input("btn-cancel", "n_clicks"),
      Input("save-button", "n_clicks")],
@@ -515,19 +541,19 @@ def export_csv(n_clicks, status_filter, tech_filter, month_filter, search_text):
      State("edit-mode-store", "data")],
     prevent_initial_call=True
 )
-def toggle_modal(active_cell, btn_new, btn_cancel, btn_save, table_data, is_open, selected_customer, edit_mode):
+def toggle_modal(edit_btn_clicks, btn_new, btn_cancel, btn_save, table_data, is_open, selected_customer, edit_mode):
     ctx = callback_context
     if not ctx.triggered:
         return no_update
     
-    trigger_id = ctx.triggered[0]["prop_id"].split(".")[0]
+    trigger_id = ctx.triggered[0]["prop_id"]
 
     # Fechar modal
-    if trigger_id in ["btn-cancel", "save-button"]:
-        return False, None, None, "", "", None, None, None, None, [], "", ""
+    if "btn-cancel" in trigger_id or "save-button" in trigger_id:
+        return False, None, None, "", "", None, None, None, None, [], None, None
 
     # Novo cliente
-    if trigger_id == "btn-novo-cliente":
+    if "btn-novo-cliente" in trigger_id:
         return (
             True,
             None,
@@ -539,37 +565,55 @@ def toggle_modal(active_cell, btn_new, btn_cancel, btn_save, table_data, is_open
             0,
             CHARGE_METHOD_OPTIONS[0]['value'] if CHARGE_METHOD_OPTIONS else None,
             [],
-            "",
-            ""
+            None,
+            None
         )
 
-    # Editar cliente existente
-    if trigger_id == "customers-table" and active_cell:
-        if active_cell.get("column_id") == "AÇÕES":
-            row_idx = active_cell.get("row")
-            if row_idx is not None and row_idx < len(table_data):
-                row = table_data[row_idx]
-                auto_raw = str(row.get("AUTO_RAW", "")).lower()
-                auto_val = ["yes"] if auto_raw in ["yes", "sim", "y"] else []
-                return (
-                    True,
-                    row.get("CLIENTE"),
-                    "edit",
-                    f"Editar Cliente",
-                    row.get("CLIENTE", ""),
-                    row.get("STATUS_RAW"),
-                    row.get("PISCINEIRO_RAW"),
-                    row.get("VALOR_RAW"),
-                    row.get("METODO_RAW"),
-                    auto_val,
-                    row.get("ULTIMA_RAW", ""),
-                    row.get("PROXIMA_RAW", "")
-                )
+    # Editar cliente existente (botão pattern matching)
+    if "edit-btn" in trigger_id:
+        import json
+        trigger_dict = json.loads(trigger_id.split(".")[0])
+        row_idx = trigger_dict.get("index")
+        
+        if row_idx is not None and row_idx < len(table_data):
+            row = table_data[row_idx]
+            auto_raw = str(row.get("AUTO_RAW", "")).lower()
+            auto_val = ["yes"] if auto_raw in ["yes", "sim", "y"] else []
+            
+            # Converter datas DD/MM/YYYY para YYYY-MM-DD (formato do DatePicker)
+            def convert_date_to_iso(date_str):
+                if not date_str or date_str == "Não agendado":
+                    return None
+                try:
+                    from datetime import datetime
+                    dt = datetime.strptime(date_str, "%d/%m/%Y")
+                    return dt.strftime("%Y-%m-%d")
+                except:
+                    return None
+            
+            ultima_date = convert_date_to_iso(row.get("ULTIMA_RAW", ""))
+            proxima_date = convert_date_to_iso(row.get("PROXIMA_RAW", ""))
+            
+            return (
+                True,
+                row.get("CLIENTE"),
+                "edit",
+                f"Editar Cliente",
+                row.get("CLIENTE", ""),
+                row.get("STATUS_RAW"),
+                row.get("PISCINEIRO_RAW"),
+                row.get("VALOR_RAW"),
+                row.get("METODO_RAW"),
+                auto_val,
+                ultima_date,
+                proxima_date
+            )
 
     # Manter estado atual se nenhuma ação específica
     return no_update
 
 
+# Salvar alterações (feedback apenas; fechamento do modal é feito pelo callback de toggle)
 # Salvar alterações (feedback apenas; fechamento do modal é feito pelo callback de toggle)
 @app.callback(
     Output("save-feedback", "children"),
@@ -582,8 +626,8 @@ def toggle_modal(active_cell, btn_new, btn_cancel, btn_save, table_data, is_open
      State("edit-route-price", "value"),
      State("edit-charge-method", "value"),
      State("edit-auto-pay", "value"),
-     State("edit-ultima-troca", "value"),
-     State("edit-proxima-troca", "value")]
+     State("edit-ultima-troca", "date"),
+     State("edit-proxima-troca", "date")]
 )
 def save_customer_data(n_clicks, customer_name, edit_mode, name, status, tech, route_price, charge_method, auto_pay, ultima_troca, proxima_troca):
     if not n_clicks:
@@ -614,20 +658,19 @@ def save_customer_data(n_clicks, customer_name, edit_mode, name, status, tech, r
     if route_price < 0:
         return error_toast("Valor da rota não pode ser negativo.")
 
-    def validate_date(value):
-        if not value:
+    # Converter datas do formato ISO (YYYY-MM-DD) para DD/MM/YYYY
+    def convert_iso_to_br(date_str):
+        if not date_str:
             return ''
-        parsed = data_processor._parse_date(str(value))
-        if not parsed:
-            return None
-        return value
+        try:
+            from datetime import datetime
+            dt = datetime.fromisoformat(date_str)
+            return dt.strftime("%d/%m/%Y")
+        except:
+            return ''
 
-    ultima_valid = validate_date(ultima_troca)
-    if ultima_valid is None:
-        return error_toast("Data de Última Troca inválida. Use DD/MM/AAAA.")
-    proxima_valid = validate_date(proxima_troca)
-    if proxima_valid is None:
-        return error_toast("Data de Próxima Troca inválida. Use DD/MM/AAAA.")
+    ultima_valid = convert_iso_to_br(ultima_troca)
+    proxima_valid = convert_iso_to_br(proxima_troca)
 
     auto_value = 'Yes' if auto_pay and 'yes' in auto_pay else 'No'
 

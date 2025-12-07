@@ -67,6 +67,64 @@ body {
     border-radius: 10px !important;
 }
 
+/* Botões de Ação da Tabela */
+.action-buttons-wrapper {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 10;
+}
+
+.action-btn-edit {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+    border: none !important;
+    border-radius: 8px !important;
+    padding: 8px 16px !important;
+    font-weight: 600 !important;
+    font-size: 0.875rem !important;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25) !important;
+    transition: all 0.2s ease !important;
+    display: inline-flex !important;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer !important;
+    white-space: nowrap;
+}
+
+.action-btn-edit:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35) !important;
+}
+
+.action-btn-edit:active {
+    transform: translateY(0) scale(0.98) !important;
+}
+
+#table-with-actions {
+    position: relative;
+}
+
+#action-buttons-container {
+    position: absolute;
+    right: 0;
+    top: 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding-right: 20px;
+}
+
+#action-buttons-container .row {
+    margin: 0 !important;
+    min-height: 53px;
+    display: flex;
+    align-items: center;
+}
+
 .btn-novo-cliente:hover {
     transform: translateY(-1px);
     box-shadow: 0 10px 18px -6px rgba(59, 130, 246, 0.4) !important;
@@ -356,6 +414,101 @@ body {
 
 .form-label {
     font-size: 0.95rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 0.6rem;
+}
+
+/* Date Picker Customization */
+.custom-datepicker {
+    width: 100%;
+}
+
+.DateInput {
+    width: 100% !important;
+    background: white;
+}
+
+.DateInput_input {
+    font-size: 0.95rem !important;
+    padding: 0.65rem 1rem !important;
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 10px !important;
+    background-color: white !important;
+    color: #334155 !important;
+    font-family: 'Inter', sans-serif !important;
+    transition: all 0.2s ease !important;
+}
+
+.DateInput_input::placeholder {
+    color: #94a3b8 !important;
+}
+
+.DateInput_input:focus {
+    outline: none !important;
+    border-color: #3b82f6 !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12) !important;
+}
+
+.DateInput_fang {
+    top: 40px !important;
+}
+
+.CalendarDay__selected,
+.CalendarDay__selected:active,
+.CalendarDay__selected:hover {
+    background: #3b82f6 !important;
+    border: 1px solid #3b82f6 !important;
+    color: white !important;
+}
+
+.CalendarDay__selected_span {
+    background: #dbeafe !important;
+    border: 1px solid #93c5fd !important;
+    color: #1e40af !important;
+}
+
+.CalendarDay__hovered_span,
+.CalendarDay__hovered_span:hover {
+    background: #eff6ff !important;
+    border: 1px solid #bfdbfe !important;
+    color: #1e40af !important;
+}
+
+.DayPickerNavigation_button {
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 8px !important;
+    padding: 6px !important;
+}
+
+.DayPickerNavigation_button:hover {
+    border-color: #3b82f6 !important;
+    background: #eff6ff !important;
+}
+
+.CalendarMonth_caption {
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    color: #1e293b !important;
+    padding-bottom: 40px !important;
+}
+
+.DayPicker_weekHeader {
+    color: #64748b !important;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+}
+
+.CalendarDay {
+    border: 1px solid #f1f5f9 !important;
+    font-size: 0.9rem !important;
+    color: #334155 !important;
+}
+
+.CalendarDay:hover {
+    background: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+}
     font-weight: 600;
     color: #475569;
     margin-bottom: 0.4rem;
