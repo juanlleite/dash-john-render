@@ -68,10 +68,26 @@ body {
 }
 
 /* Botões de Ação da Tabela */
+#table-with-actions {
+    display: flex;
+    position: relative;
+    width: 100%;
+}
+
+.table-container {
+    position: relative;
+    overflow: visible !important;
+}
+
+.dash-table-container {
+    width: calc(100% - 140px) !important;
+}
+
 .action-buttons-wrapper {
     position: absolute;
     right: 0;
     top: 60px;
+    width: 130px;
     display: flex;
     flex-direction: column;
     gap: 0;
@@ -83,8 +99,7 @@ body {
     height: 53px;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    padding-right: 20px;
+    justify-content: center;
     pointer-events: auto;
 }
 
@@ -114,21 +129,12 @@ body {
     transform: translateY(0) scale(0.98) !important;
 }
 
-#table-with-actions {
-    position: relative;
-}
-
 #action-buttons-container {
     position: absolute;
     right: 0;
     top: 0;
     width: 140px;
     pointer-events: none;
-}
-
-.table-container {
-    padding-right: 140px !important;
-    position: relative;
 }
 
 .btn-novo-cliente:hover {

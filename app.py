@@ -472,8 +472,7 @@ def update_dashboard(status_filter, tech_filter, month_filter, search_text, save
                 id={"type": "edit-btn", "index": row['INDEX_HIDDEN']},
                 color="primary",
                 size="sm",
-                className="action-btn-edit",
-                n_clicks=0
+                className="action-btn-edit"
             )
         ], className="action-btn-row")
         for row in table_data
@@ -548,6 +547,10 @@ def toggle_modal(edit_btn_clicks, btn_new, btn_cancel, btn_save, table_data, is_
         return no_update
     
     trigger_id = ctx.triggered[0]["prop_id"]
+    
+    # Ignorar se nenhum botão foi realmente clicado
+    if not any([btn_new, btn_cancel, btn_save]) and not any(edit_btn_clicks):
+        return no_update
 
     # Fechar modal
     if "btn-cancel" in trigger_id or "save-button" in trigger_id:
