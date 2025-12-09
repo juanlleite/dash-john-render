@@ -257,6 +257,7 @@ app.layout = dbc.Container([
                 style_as_list_view=True,
                 page_size=12,
                 page_action="native",
+                page_current=0,
                 sort_action="native",
                 sort_mode="multi"
             ),
@@ -309,36 +310,20 @@ app.layout = dbc.Container([
             dbc.Row([
                 dbc.Col([
                     html.Label("Última Troca (Filtro)", className="form-label"),
-                    dcc.DatePickerSingle(
+                    dbc.Input(
                         id="edit-ultima-troca",
-                        placeholder="Selecione a data",
-                        display_format="DD/MM/YYYY",
-                        first_day_of_week=1,
-                        month_format="MMMM YYYY",
-                        show_outside_days=True,
-                        with_portal=False,
-                        with_full_screen_portal=False,
-                        number_of_months_shown=1,
-                        minimum_nights=0,
-                        className="custom-datepicker",
-                        style={'width': '100%'}
+                        type="date",
+                        placeholder="dd / mm / aaaa",
+                        className="date-input-custom"
                     )
                 ], md=6),
                 dbc.Col([
                     html.Label("Próxima Troca (Filtro)", className="form-label"),
-                    dcc.DatePickerSingle(
+                    dbc.Input(
                         id="edit-proxima-troca",
-                        placeholder="Selecione a data",
-                        display_format="DD/MM/YYYY",
-                        first_day_of_week=1,
-                        month_format="MMMM YYYY",
-                        show_outside_days=True,
-                        with_portal=False,
-                        with_full_screen_portal=False,
-                        number_of_months_shown=1,
-                        minimum_nights=0,
-                        className="custom-datepicker",
-                        style={'width': '100%'}
+                        type="date",
+                        placeholder="dd / mm / aaaa",
+                        className="date-input-custom"
                     )
                 ], md=6)
             ])
@@ -372,9 +357,12 @@ app.layout = dbc.Container([
      Input("tech-filter", "value"),
      Input("month-filter", "value"),
      Input("search-input", "value"),
-     Input("save-button", "n_clicks")]
+     Input("save-button", "n_clicks"),
+     Input("customers-table", "page_current"),
+     Input("customers-table", "page_size"),
+     Input("customers-table", "sort_by")]
 )
-def update_dashboard(status_filter, tech_filter, month_filter, search_text, save_clicks):
+def update_dashboard(status_filter, tech_filter, month_filter, search_text, save_clicks, page_current, page_size, sort_by):
     # Recarregar dados
     data_processor.load_extra_data()
     data_processor.load_data()
@@ -476,7 +464,20 @@ def update_dashboard(status_filter, tech_filter, month_filter, search_text, save
         for col in table_df.columns if not col.endswith('_RAW') and col != 'INDEX_HIDDEN'
     ]
     
-    # Criar botões de ação para cada linha (alinhados com a tabela)
+    # Calcular linhas da página atual
+    if page_current is None:
+        page_current = 0
+    if page_size is None:
+        page_size = 12
+    
+    start_idx = page_current * page_size
+    end_idx = min(start_idx + page_size, len(table_data))
+    
+    # Criar botões de ação apenas para as linhas visíveis na página atual
+    # Garantir que criamos exatamente page_size botões ou menos na última página
+    num_buttons = min(page_size, len(table_data) - start_idx)
+    visible_rows = table_data[start_idx:end_idx]
+    
     action_buttons = html.Div([
         html.Div([
             dbc.Button(
@@ -487,7 +488,7 @@ def update_dashboard(status_filter, tech_filter, month_filter, search_text, save
                 className="action-btn-edit"
             )
         ], className="action-btn-row")
-        for row in table_data
+        for row in visible_rows
     ], className="action-buttons-wrapper", id="action-buttons-list")
     
     return (
@@ -541,8 +542,8 @@ def export_csv(n_clicks, status_filter, tech_filter, month_filter, search_text):
      Output("edit-route-price", "value"),
      Output("edit-charge-method", "value"),
      Output("edit-auto-pay", "value"),
-     Output("edit-ultima-troca", "date"),
-     Output("edit-proxima-troca", "date")],
+     Output("edit-ultima-troca", "value"),
+     Output("edit-proxima-troca", "value")],
     [Input({"type": "edit-btn", "index": ALL}, "n_clicks"),
      Input("btn-novo-cliente", "n_clicks"),
      Input("btn-cancel", "n_clicks"),
@@ -642,8 +643,8 @@ def toggle_modal(edit_btn_clicks, btn_new, btn_cancel, btn_save, table_data, is_
      State("edit-route-price", "value"),
      State("edit-charge-method", "value"),
      State("edit-auto-pay", "value"),
-     State("edit-ultima-troca", "date"),
-     State("edit-proxima-troca", "date")]
+     State("edit-ultima-troca", "value"),
+     State("edit-proxima-troca", "value")]
 )
 def save_customer_data(n_clicks, customer_name, edit_mode, name, status, tech, route_price, charge_method, auto_pay, ultima_troca, proxima_troca):
     if not n_clicks:
