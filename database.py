@@ -2,12 +2,16 @@
 Configuração e gerenciamento do banco de dados PostgreSQL
 """
 import os
+from dotenv import load_dotenv
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.pool import NullPool
 from contextlib import contextmanager
 from models import Base, Cliente, Auditoria
 import logging
+
+# Carregar variáveis de ambiente
+load_dotenv()
 
 # Configurar logging
 logging.basicConfig(level=logging.INFO)
