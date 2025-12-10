@@ -45,8 +45,8 @@ class PoolDataProcessor:
                         'Route Price': float(cliente.valor_rota) if cliente.valor_rota else 0.00,
                         'Charge Method': cliente.metodo_cobranca or 'N/A',
                         'Auto Charge': 'Yes' if cliente.auto_pay else 'No',
-                        'Last Changed': cliente.ultima_troca.strftime('%d/%m/%Y') if cliente.ultima_troca else '',
-                        'Next Change': cliente.proxima_troca.strftime('%d/%m/%Y') if cliente.proxima_troca else '',
+                        'Ultima Troca': cliente.ultima_troca.strftime('%d/%m/%Y') if cliente.ultima_troca else '',
+                        'Proxima Troca': cliente.proxima_troca.strftime('%d/%m/%Y') if cliente.proxima_troca else '',
                         'ID': cliente.id  # ID do banco para referência
                     })
                 
