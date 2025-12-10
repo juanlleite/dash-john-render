@@ -12,6 +12,14 @@ ENV/
 env/
 .virtualenv/
 
+# Banco de dados e backups
+*.db
+*.sqlite
+*.sqlite3
+backups/
+.env
+local_database.db
+
 # IDEs
 .vscode/
 .idea/

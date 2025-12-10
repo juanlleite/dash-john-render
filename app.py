@@ -1,14 +1,25 @@
 """
 Painel L'Acqua Azzurra - Dashboard Profissional
 Dashboard interativo para gerenciamento de clientes e manutenções de piscinas
+VERSÃO PostgreSQL
 """
 
 import os
 import dash
 from dash import dcc, html, Input, Output, State, dash_table, callback_context, no_update, ALL
 import dash_bootstrap_components as dbc
-from data_processor import PoolDataProcessor
+from dotenv import load_dotenv
+
+# Carregar variáveis de ambiente (.env)
+load_dotenv()
+
+# Importar módulos do banco de dados
+from database import init_db
+from data_processor_postgres import PoolDataProcessor
 import pandas as pd
+
+# Inicializar banco de dados
+init_db()
 
 # Inicializar o app
 app = dash.Dash(
@@ -24,9 +35,9 @@ app = dash.Dash(
 # Expor o servidor Flask para WSGI (Gunicorn, Render, etc.)
 server = app.server
 
-# Inicializar processador de dados
-CSV_PATH = "L'Acqua Azzurra Pools Customer report-171125135257 - Sheet.csv"
-data_processor = PoolDataProcessor(CSV_PATH)
+# Inicializar processador de dados (PostgreSQL)
+data_processor = PoolDataProcessor()
+data_processor.load_data()
 
 # Opções para selects
 STATUS_OPTIONS = [{"label": s, "value": s} for s in data_processor.get_statuses()]
