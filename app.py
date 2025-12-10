@@ -37,18 +37,39 @@ server = app.server
 
 # Inicializar processador de dados (PostgreSQL)
 data_processor = PoolDataProcessor()
-data_processor.load_data()
+# NÃO carregar dados na inicialização - lazy loading para economizar memória
 
-# Opções para selects
-STATUS_OPTIONS = [{"label": s, "value": s} for s in data_processor.get_statuses()]
+# Opções para selects (cache)
+_cached_options = {}
 
-tech_names = data_processor.get_technicians()
-TECH_EDIT_OPTIONS = ([{"label": "Sem Piscineiro", "value": "Não atribuído"}] +
-                     [{"label": f"🏊 {t}", "value": t} for t in tech_names])
-TECH_FILTER_OPTIONS = ([{"label": "Todos os Piscineiros", "value": "Todos"},
-                        {"label": "Sem Piscineiro", "value": "Não atribuído"}] +
-                       [{"label": f"🏊 {t}", "value": t} for t in tech_names])
-CHARGE_METHOD_OPTIONS = [{"label": m, "value": m} for m in sorted(data_processor.df['Charge Method'].dropna().unique())]
+def get_status_options():
+    """Lazy loading de opções de status"""
+    if 'status' not in _cached_options:
+        _cached_options['status'] = [{"label": s, "value": s} for s in data_processor.get_statuses()]
+    return _cached_options['status']
+
+def get_tech_options():
+    """Lazy loading de opções de técnicos"""
+    if 'tech' not in _cached_options:
+        tech_names = data_processor.get_technicians()
+        _cached_options['tech'] = {
+            'edit': ([{"label": "Sem Piscineiro", "value": "Não atribuído"}] +
+                    [{"label": f"🏊 {t}", "value": t} for t in tech_names]),
+            'filter': ([{"label": "Todos os Piscineiros", "value": "Todos"},
+                       {"label": "Sem Piscineiro", "value": "Não atribuído"}] +
+                      [{"label": f"🏊 {t}", "value": t} for t in tech_names])
+        }
+    return _cached_options['tech']
+
+STATUS_OPTIONS = []  # Inicializar vazio, será preenchido no primeiro uso
+TECH_EDIT_OPTIONS = []  # Lazy loading
+TECH_FILTER_OPTIONS = []  # Lazy loading
+CHARGE_METHOD_OPTIONS = [
+    {"label": "Cash", "value": "Cash"},
+    {"label": "Check", "value": "Check"},
+    {"label": "Credit Card", "value": "Credit Card"},
+    {"label": "N/A", "value": "N/A"}
+]
 
 # ===== LAYOUT DO DASHBOARD =====
 app.layout = dbc.Container([
@@ -143,23 +164,23 @@ app.layout = dbc.Container([
         dbc.Col([
             dcc.Dropdown(
                 id="status-filter",
-                options=[{"label": "Todos os Status", "value": "Todos"}] + STATUS_OPTIONS,
+                options=[],  # Será populado via callback
                 value="Todos",
                 clearable=False,
                 searchable=False,
                 className="status-dropdown",
-                placeholder="Status"
+                placeholder="Carregando..."
             )
         ], md=3),
         dbc.Col([
             dcc.Dropdown(
                 id="tech-filter",
-                options=TECH_FILTER_OPTIONS,
+                options=[],  # Será populado via callback
                 value="Todos",
                 clearable=False,
                 searchable=False,
                 className="tech-dropdown",
-                placeholder="Piscineiro"
+                placeholder="Carregando..."
             )
         ], md=3),
         dbc.Col([
@@ -290,11 +311,11 @@ app.layout = dbc.Container([
             dbc.Row([
                 dbc.Col([
                     html.Label("Status", className="form-label"),
-                    dcc.Dropdown(id="edit-status", options=STATUS_OPTIONS, placeholder="Status")
+                    dcc.Dropdown(id="edit-status", options=[], placeholder="Carregando...")
                 ], md=6),
                 dbc.Col([
                     html.Label("Piscineiro", className="form-label"),
-                    dcc.Dropdown(id="edit-tech", options=TECH_EDIT_OPTIONS, placeholder="Piscineiro")
+                    dcc.Dropdown(id="edit-tech", options=[], placeholder="Carregando...")
                 ], md=6)
             ], className="mb-3"),
             dbc.Row([
@@ -363,7 +384,11 @@ app.layout = dbc.Container([
      Output("kpi-future-maintenance", "children"),
      Output("customers-table", "data"),
      Output("customers-table", "columns"),
-     Output("action-buttons-container", "children")],
+     Output("action-buttons-container", "children"),
+     Output("status-filter", "options"),
+     Output("tech-filter", "options"),
+     Output("edit-status", "options"),
+     Output("edit-tech", "options")],
     [Input("status-filter", "value"),
      Input("tech-filter", "value"),
      Input("month-filter", "value"),
@@ -374,9 +399,16 @@ app.layout = dbc.Container([
      Input("customers-table", "sort_by")]
 )
 def update_dashboard(status_filter, tech_filter, month_filter, search_text, save_clicks, page_current, page_size, sort_by):
-    # Recarregar dados
+    # Lazy loading - carregar dados apenas quando callback executa
     data_processor.load_extra_data()
     data_processor.load_data()
+    
+    # Popular opções dos dropdowns (lazy loading)
+    status_opts = get_status_options()
+    tech_opts = get_tech_options()
+    status_filter_opts = [{"label": "Todos os Status", "value": "Todos"}] + status_opts
+    tech_filter_opts = tech_opts['filter']
+    tech_edit_opts = tech_opts['edit']
     
     # KPIs
     monthly_revenue = data_processor.get_monthly_revenue()
@@ -508,7 +540,11 @@ def update_dashboard(status_filter, tech_filter, month_filter, search_text, save
         f"{future_maintenance}",
         table_data,
         table_columns,
-        action_buttons
+        action_buttons,
+        status_filter_opts,  # status-filter options
+        tech_filter_opts,    # tech-filter options
+        status_opts,         # edit-status options
+        tech_edit_opts       # edit-tech options
     )
 
 
@@ -588,10 +624,10 @@ def toggle_modal(edit_btn_clicks, btn_new, btn_cancel, btn_save, table_data, is_
             "create",
             "Novo Cliente",
             "",
-            STATUS_OPTIONS[0]['value'] if STATUS_OPTIONS else None,
+            None,  # Status - será populado pelo dropdown
             "Não atribuído",
             0,
-            CHARGE_METHOD_OPTIONS[0]['value'] if CHARGE_METHOD_OPTIONS else None,
+            CHARGE_METHOD_OPTIONS[0]['value'] if CHARGE_METHOD_OPTIONS else "Cash",
             [],
             None,
             None
