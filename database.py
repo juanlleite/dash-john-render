@@ -48,11 +48,16 @@ class Database:
         engine_kwargs = {
             'echo': False,  # True para debug SQL
             'pool_pre_ping': True,  # Verifica conexões antes de usar
+            'pool_recycle': 300,  # Reciclar conexões a cada 5 minutos
         }
         
         # PostgreSQL usa pool de conexões, SQLite não
         if not self.is_sqlite:
-            engine_kwargs['poolclass'] = NullPool  # Render gerencia o pool
+            # Configuração otimizada para Render Free Tier (256MB RAM)
+            engine_kwargs['poolclass'] = NullPool  # Sem pool - abre/fecha conexões imediatamente
+            engine_kwargs['connect_args'] = {
+                'connect_timeout': 10,  # Timeout de conexão (segundos)
+            }
         
         self.engine = create_engine(database_url, **engine_kwargs)
         

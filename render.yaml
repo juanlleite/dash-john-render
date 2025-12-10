@@ -6,7 +6,7 @@ services:
     plan: free
     branch: main
     buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
-    startCommand: "gunicorn app:server --bind 0.0.0.0:$PORT --workers 2 --threads 4 --timeout 120"
+    startCommand: "gunicorn app:server --config gunicorn_config.py"
     envVars:
       - key: PYTHON_VERSION
         value: 3.13.5
