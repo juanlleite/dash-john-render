@@ -366,3 +366,34 @@ class PoolDataProcessor:
         except Exception as e:
             logger.error(f"❌ Erro ao calcular faturamento mensal: {e}")
             return 0.00
+    
+    def get_active_customers_count(self):
+        """Conta total de clientes ativos"""
+        try:
+            with db.get_session() as session:
+                count = session.query(Cliente).filter(
+                    Cliente.status == 'Ativo'
+                ).count()
+                
+                return count
+                
+        except Exception as e:
+            logger.error(f"❌ Erro ao contar clientes ativos: {e}")
+            return 0
+    
+    def get_future_maintenance_count(self):
+        """Conta manutenções futuras (clientes com próxima troca agendada)"""
+        try:
+            with db.get_session() as session:
+                from datetime import date
+                
+                count = session.query(Cliente).filter(
+                    Cliente.proxima_troca.isnot(None),
+                    Cliente.proxima_troca >= date.today()
+                ).count()
+                
+                return count
+                
+        except Exception as e:
+            logger.error(f"❌ Erro ao contar manutenções futuras: {e}")
+            return 0
