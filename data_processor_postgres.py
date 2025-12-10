@@ -348,3 +348,21 @@ class PoolDataProcessor:
                 
         except Exception as e:
             logger.error(f"❌ Erro ao registrar auditoria: {e}")
+    
+    def get_monthly_revenue(self):
+        """Calcula faturamento mensal total baseado em clientes ativos"""
+        try:
+            with db.get_session() as session:
+                # Somar valor_rota de todos os clientes ativos
+                total = session.query(func.sum(Cliente.valor_rota)).filter(
+                    or_(
+                        Cliente.status == 'Ativo',
+                        Cliente.status == 'Active (routed)'
+                    )
+                ).scalar()
+                
+                return float(total) if total else 0.00
+                
+        except Exception as e:
+            logger.error(f"❌ Erro ao calcular faturamento mensal: {e}")
+            return 0.00
