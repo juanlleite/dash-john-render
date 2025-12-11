@@ -11,10 +11,12 @@ pandas==2.3.3
 numpy==2.3.5
 openpyxl==3.1.5
 
-# Banco de dados PostgreSQL
+# Banco de dados (MySQL para Hostinger, PostgreSQL para outros)
 SQLAlchemy==2.0.36
 psycopg2-binary==2.9.10
+PyMySQL==1.1.1
 python-dotenv==1.0.1
+cryptography==42.0.5
 
 # Servidor WSGI para produção
 gunicorn==23.0.0

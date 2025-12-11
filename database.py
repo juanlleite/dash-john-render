@@ -1,11 +1,12 @@
 """
-Configuração e gerenciamento do banco de dados PostgreSQL
+Configuração e gerenciamento do banco de dados
+Suporta: MySQL (Hostinger), PostgreSQL (Render), SQLite (local)
 """
 import os
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker, scoped_session
-from sqlalchemy.pool import NullPool
+from sqlalchemy.pool import NullPool, QueuePool
 from contextlib import contextmanager
 from models import Base, Cliente, Auditoria
 import logging
@@ -43,21 +44,33 @@ class Database:
         
         self.database_url = database_url
         self.is_sqlite = database_url.startswith('sqlite')
+        self.is_mysql = database_url.startswith('mysql')
+        self.is_postgresql = database_url.startswith('postgresql')
         
-        # Configurar engine
+        # Configurar engine baseado no tipo de banco
         engine_kwargs = {
             'echo': False,  # True para debug SQL
             'pool_pre_ping': True,  # Verifica conexões antes de usar
-            'pool_recycle': 300,  # Reciclar conexões a cada 5 minutos
+            'pool_recycle': 3600,  # Reciclar conexões a cada 1 hora
         }
         
-        # PostgreSQL usa pool de conexões, SQLite não
-        if not self.is_sqlite:
-            # Configuração otimizada para Render Free Tier (256MB RAM)
-            engine_kwargs['poolclass'] = NullPool  # Sem pool - abre/fecha conexões imediatamente
+        if self.is_mysql:
+            # Configuração para MySQL (Hostinger)
+            engine_kwargs['poolclass'] = QueuePool
+            engine_kwargs['pool_size'] = 5
+            engine_kwargs['max_overflow'] = 10
+            engine_kwargs['pool_timeout'] = 30
             engine_kwargs['connect_args'] = {
-                'connect_timeout': 10,  # Timeout de conexão (segundos)
+                'connect_timeout': 10,
+                'charset': 'utf8mb4'
             }
+        elif self.is_postgresql:
+            # Configuração para PostgreSQL (Render/outras plataformas)
+            engine_kwargs['poolclass'] = NullPool  # Sem pool - abre/fecha imediatamente
+            engine_kwargs['connect_args'] = {
+                'connect_timeout': 10
+            }
+        # SQLite não precisa de configurações especiais
         
         self.engine = create_engine(database_url, **engine_kwargs)
         
