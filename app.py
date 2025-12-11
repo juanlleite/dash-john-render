@@ -742,14 +742,7 @@ def save_customer_data(n_clicks, customer_name, edit_mode, name, status, tech, t
             'Ultima Troca': ultima_valid,
             'Proxima Troca': proxima_valid
         })
-        data_processor.log_action("create", name, {
-            'Status': status,
-            'Route Tech': tech,
-            'Tipo Filtro': tipo_filtro,
-            'Valor Filtro': valor_filtro,
-            'Ultima Troca': ultima_valid,
-            'Proxima Troca': proxima_valid
-        })
+        # Log action já é feito dentro de add_customer
     else:
         # Renomear se necessário
         if name != customer_name and data_processor.name_exists(name):
@@ -764,14 +757,7 @@ def save_customer_data(n_clicks, customer_name, edit_mode, name, status, tech, t
         data_processor.update_customer_data(customer_name, "Valor Filtro", valor_filtro)
         data_processor.update_customer_data(customer_name, "Ultima Troca", ultima_valid)
         data_processor.update_customer_data(customer_name, "Proxima Troca", proxima_valid)
-        data_processor.log_action("update", customer_name, {
-            'Status': status,
-            'Route Tech': tech,
-            'Tipo Filtro': tipo_filtro,
-            'Valor Filtro': valor_filtro,
-            'Ultima Troca': ultima_valid,
-            'Proxima Troca': proxima_valid
-        })
+        # Log action já é feito dentro de update_customer_data para cada campo
 
     toast = dbc.Toast(
         "Dados salvos com sucesso!",
