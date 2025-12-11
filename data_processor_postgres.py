@@ -43,8 +43,8 @@ class PoolDataProcessor:
                         'Status': cliente.status,
                         'Route Tech': cliente.piscineiro or 'Não atribuído',
                         'Route Price': float(cliente.valor_rota) if cliente.valor_rota else 0.00,
-                        'Charge Method': cliente.metodo_cobranca or 'N/A',
-                        'Auto Charge': 'Yes' if cliente.auto_pay else 'No',
+                        'Tipo Filtro': cliente.tipo_filtro or '',
+                        'Valor Filtro': float(cliente.valor_filtro) if cliente.valor_filtro else 0.00,
                         'Ultima Troca': cliente.ultima_troca.strftime('%d/%m/%Y') if cliente.ultima_troca else '',
                         'Proxima Troca': cliente.proxima_troca.strftime('%d/%m/%Y') if cliente.proxima_troca else '',
                         'ID': cliente.id  # ID do banco para referência
@@ -60,7 +60,7 @@ class PoolDataProcessor:
             # Fallback para DataFrame vazio
             self.df = pd.DataFrame(columns=[
                 'Name', 'Status', 'Route Tech', 'Route Price', 
-                'Charge Method', 'Auto Charge', 'Last Changed', 'Next Change', 'ID'
+                'Tipo Filtro', 'Valor Filtro', 'Ultima Troca', 'Proxima Troca', 'ID'
             ])
     
     def load_extra_data(self):
@@ -135,10 +135,12 @@ class PoolDataProcessor:
                     'Status': 'status',
                     'Route Tech': 'piscineiro',
                     'Route Price': 'valor_rota',
-                    'Charge Method': 'metodo_cobranca',
-                    'Auto Charge': 'auto_pay',
-                    'Last Changed': 'ultima_troca',
-                    'Next Change': 'proxima_troca'
+                    'Tipo Filtro': 'tipo_filtro',
+                    'Valor Filtro': 'valor_filtro',
+                    'Ultima Troca': 'ultima_troca',
+                    'Proxima Troca': 'proxima_troca',
+                    'Last Changed': 'ultima_troca',  # Compatibilidade
+                    'Next Change': 'proxima_troca'   # Compatibilidade
                 }
                 
                 db_field = field_mapping.get(field, field.lower().replace(' ', '_'))
@@ -147,11 +149,9 @@ class PoolDataProcessor:
                 # Processar valor baseado no campo
                 if field == 'Route Tech':
                     value = self._normalize_tech(value)
-                elif field == 'Route Price':
+                elif field in ['Route Price', 'Valor Filtro']:
                     value = Decimal(str(value)) if value else Decimal('0.00')
-                elif field == 'Auto Charge':
-                    value = value.lower() in ['yes', 'sim', 'true']
-                elif field in ['Last Changed', 'Next Change']:
+                elif field in ['Last Changed', 'Next Change', 'Ultima Troca', 'Proxima Troca']:
                     value = self._parse_date(value)
                 
                 # Atualizar campo
@@ -192,10 +192,12 @@ class PoolDataProcessor:
                     'Status': cliente.status,
                     'Route Tech': cliente.piscineiro,
                     'Route Price': float(cliente.valor_rota) if cliente.valor_rota else 0.00,
-                    'Charge Method': cliente.metodo_cobranca or '',
-                    'Auto Charge': 'Yes' if cliente.auto_pay else 'No',
+                    'Tipo Filtro': cliente.tipo_filtro or '',
+                    'Valor Filtro': float(cliente.valor_filtro) if cliente.valor_filtro else 0.00,
                     'Last Changed': cliente.ultima_troca.strftime('%d/%m/%Y') if cliente.ultima_troca else '',
-                    'Next Change': cliente.proxima_troca.strftime('%d/%m/%Y') if cliente.proxima_troca else ''
+                    'Next Change': cliente.proxima_troca.strftime('%d/%m/%Y') if cliente.proxima_troca else '',
+                    'Ultima Troca': cliente.ultima_troca.strftime('%d/%m/%Y') if cliente.ultima_troca else '',
+                    'Proxima Troca': cliente.proxima_troca.strftime('%d/%m/%Y') if cliente.proxima_troca else ''
                 }
                 
                 return field_mapping.get(field, '')
@@ -210,6 +212,9 @@ class PoolDataProcessor:
         self.load_data()
         
         df_filtered = self.df.copy()
+        
+        # SEMPRE excluir clientes inativos da visualização
+        df_filtered = df_filtered[df_filtered['Status'] != 'Inactive']
         
         # Aplicar filtros
         if status_filter and status_filter != 'Todos':
@@ -229,7 +234,7 @@ class PoolDataProcessor:
                 except:
                     return False
             
-            df_filtered = df_filtered[df_filtered['Next Change'].apply(filter_by_month)]
+            df_filtered = df_filtered[df_filtered['Proxima Troca'].apply(filter_by_month)]
         
         return df_filtered
     
@@ -246,10 +251,16 @@ class PoolDataProcessor:
         """Retorna lista de piscineiros únicos"""
         try:
             with db.get_session() as session:
-                techs = session.query(Cliente.piscineiro).distinct().all()
-                tech_list = [t[0] for t in techs if t[0] and t[0] != 'Não atribuído']
+                techs = session.query(Cliente.piscineiro).distinct().filter(
+                    Cliente.piscineiro.isnot(None),
+                    Cliente.piscineiro != '',
+                    Cliente.piscineiro != 'Não atribuído'
+                ).all()
+                tech_list = [t[0] for t in techs if t[0]]
+                logger.info(f"✅ Piscineiros encontrados: {tech_list}")
                 return sorted(tech_list)
-        except:
+        except Exception as e:
+            logger.error(f"❌ Erro ao buscar piscineiros: {e}")
             return []
     
     def get_available_months(self):
@@ -306,10 +317,10 @@ class PoolDataProcessor:
                     status=customer_data.get('Status', 'Ativo'),
                     piscineiro=self._normalize_tech(customer_data.get('Route Tech')),
                     valor_rota=Decimal(str(customer_data.get('Route Price', 0))),
-                    metodo_cobranca=customer_data.get('Charge Method'),
-                    auto_pay=customer_data.get('Auto Charge', 'No').lower() in ['yes', 'sim'],
-                    ultima_troca=self._parse_date(customer_data.get('Last Changed')),
-                    proxima_troca=self._parse_date(customer_data.get('Next Change'))
+                    tipo_filtro=customer_data.get('Tipo Filtro'),
+                    valor_filtro=Decimal(str(customer_data.get('Valor Filtro', 0))),
+                    ultima_troca=self._parse_date(customer_data.get('Ultima Troca')),
+                    proxima_troca=self._parse_date(customer_data.get('Proxima Troca'))
                 )
                 
                 session.add(cliente)
@@ -397,3 +408,43 @@ class PoolDataProcessor:
         except Exception as e:
             logger.error(f"❌ Erro ao contar manutenções futuras: {e}")
             return 0
+    
+    def rename_customer(self, old_name, new_name):
+        """Renomeia um cliente"""
+        try:
+            with db.get_session() as session:
+                cliente = session.query(Cliente).filter_by(nome=old_name).first()
+                
+                if not cliente:
+                    logger.warning(f"Cliente '{old_name}' não encontrado para renomear")
+                    return False
+                
+                # Verificar se novo nome já existe
+                if self.name_exists(new_name):
+                    logger.warning(f"Nome '{new_name}' já existe")
+                    return False
+                
+                old_value = cliente.nome
+                cliente.nome = new_name
+                
+                # Registrar auditoria
+                self.log_action(
+                    'update',
+                    cliente_id=cliente.id,
+                    nome_cliente=new_name,
+                    campo='nome',
+                    valor_anterior=old_value,
+                    valor_novo=new_name
+                )
+                
+                session.commit()
+                logger.info(f"✅ Cliente renomeado: '{old_name}' → '{new_name}'")
+                
+                # Recarregar DataFrame
+                self.load_data()
+                
+                return True
+                
+        except Exception as e:
+            logger.error(f"❌ Erro ao renomear cliente: {e}")
+            return False

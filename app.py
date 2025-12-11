@@ -253,31 +253,30 @@ app.layout = dbc.Container([
                     {'if': {'column_id': 'CLIENTE'}, 'minWidth': '200px', 'maxWidth': '240px'},
                     {'if': {'column_id': 'STATUS'}, 'minWidth': '130px', 'maxWidth': '150px', 'textAlign': 'center'},
                     {'if': {'column_id': 'PISCINEIRO'}, 'minWidth': '140px', 'maxWidth': '160px'},
-                    {'if': {'column_id': 'VALOR'}, 'minWidth': '100px', 'maxWidth': '110px', 'textAlign': 'center'},
-                    {'if': {'column_id': 'MÉTODO'}, 'minWidth': '140px', 'maxWidth': '160px'},
-                    {'if': {'column_id': 'AUTO PAY'}, 'minWidth': '110px', 'maxWidth': '120px', 'textAlign': 'center'},
                     {'if': {'column_id': 'ÚLTIMA TROCA'}, 'minWidth': '120px', 'maxWidth': '130px'},
-                    {'if': {'column_id': 'PRÓXIMA TROCA'}, 'minWidth': '120px', 'maxWidth': '130px'}
+                    {'if': {'column_id': 'PRÓXIMA TROCA'}, 'minWidth': '120px', 'maxWidth': '130px'},
+                    {'if': {'column_id': 'TIPO FILTRO'}, 'minWidth': '120px', 'maxWidth': '140px'},
+                    {'if': {'column_id': 'VALOR FILTRO'}, 'minWidth': '100px', 'maxWidth': '110px', 'textAlign': 'center'}
                 ],
                 style_data_conditional=[
                     {
                         'if': {
                             'filter_query': '{STATUS} contains "Ativo"',
-                            'column_id': ['CLIENTE', 'PISCINEIRO', 'ÚLTIMA TROCA', 'PRÓXIMA TROCA', 'VALOR', 'MÉTODO', 'AUTO PAY']
+                            'column_id': ['CLIENTE', 'PISCINEIRO', 'ÚLTIMA TROCA', 'PRÓXIMA TROCA', 'TIPO FILTRO', 'VALOR FILTRO']
                         },
                         'backgroundColor': '#f0fdf4',
                     },
                     {
                         'if': {
                             'filter_query': '{STATUS} contains "Inativo"',
-                            'column_id': ['CLIENTE', 'PISCINEIRO', 'ÚLTIMA TROCA', 'PRÓXIMA TROCA', 'VALOR', 'MÉTODO', 'AUTO PAY']
+                            'column_id': ['CLIENTE', 'PISCINEIRO', 'ÚLTIMA TROCA', 'PRÓXIMA TROCA', 'TIPO FILTRO', 'VALOR FILTRO']
                         },
                         'backgroundColor': '#fef2f2',
                     },
                     {
                         'if': {
                             'filter_query': '{STATUS} contains "Lead"',
-                            'column_id': ['CLIENTE', 'PISCINEIRO', 'ÚLTIMA TROCA', 'PRÓXIMA TROCA', 'VALOR', 'MÉTODO', 'AUTO PAY']
+                            'column_id': ['CLIENTE', 'PISCINEIRO', 'ÚLTIMA TROCA', 'PRÓXIMA TROCA', 'TIPO FILTRO', 'VALOR FILTRO']
                         },
                         'backgroundColor': '#fffbeb',
                     },
@@ -320,24 +319,39 @@ app.layout = dbc.Container([
             ], className="mb-3"),
             dbc.Row([
                 dbc.Col([
-                    html.Label("Valor da Rota", className="form-label"),
-                    dbc.Input(id="edit-route-price", type="number", min=0, step=10, placeholder="0")
+                    html.Label("Tipo de Filtro", className="form-label"),
+                    dcc.Dropdown(
+                        id="edit-tipo-filtro",
+                        options=[
+                            {"label": "━━━ HAYWARD ━━━", "value": "", "disabled": True},
+                            {"label": "C750", "value": "Hayward C750"},
+                            {"label": "C900", "value": "Hayward C900"},
+                            {"label": "C1100", "value": "Hayward C1100"},
+                            {"label": "C1200", "value": "Hayward C1200"},
+                            {"label": "C1750", "value": "Hayward C1750"},
+                            {"label": "C100s", "value": "Hayward C100s"},
+                            {"label": "C150s", "value": "Hayward C150s"},
+                            {"label": "C200s", "value": "Hayward C200s"},
+                            {"label": "━━━ PENTAIR ━━━", "value": "", "disabled": True},
+                            {"label": "Cc100", "value": "Pentair Cc100"},
+                            {"label": "Cc150", "value": "Pentair Cc150"},
+                            {"label": "Cc200", "value": "Pentair Cc200"},
+                            {"label": "━━━ JANDY ━━━", "value": "", "disabled": True},
+                            {"label": "Cs100", "value": "Jandy Cs100"},
+                            {"label": "Cs150", "value": "Jandy Cs150"},
+                            {"label": "Cs200", "value": "Jandy Cs200"},
+                            {"label": "Cs250", "value": "Jandy Cs250"},
+                            {"label": "━━━ OUTROS ━━━", "value": "", "disabled": True}
+                        ],
+                        placeholder="Selecione ou digite",
+                        searchable=True,
+                        clearable=True
+                    )
                 ], md=6),
                 dbc.Col([
-                    html.Label("Método de Cobrança", className="form-label"),
-                    dcc.Dropdown(id="edit-charge-method", options=CHARGE_METHOD_OPTIONS, placeholder="Método")
+                    html.Label("Valor do Filtro (R$)", className="form-label"),
+                    dbc.Input(id="edit-valor-filtro", type="number", min=0, step=0.01, placeholder="0.00")
                 ], md=6)
-            ], className="mb-3"),
-            dbc.Row([
-                dbc.Col([
-                    html.Label("Cobrança Automática", className="form-label"),
-                    dbc.Checklist(
-                        options=[{"label": " Ativar Auto Pay", "value": "yes"}],
-                        value=[],
-                        id="edit-auto-pay",
-                        switch=True
-                    )
-                ], md=12)
             ], className="mb-3"),
             dbc.Row([
                 dbc.Col([
@@ -424,24 +438,14 @@ def update_dashboard(status_filter, tech_filter, month_filter, search_text, save
             filtered_df['Name'].str.contains(search_text, case=False, na=False)
         ]
     
-    # Preparar dados para tabela
-    table_df = filtered_df[['Name', 'Status', 'Route Tech', 'Route Price', 'Charge Method', 'Auto Charge', 'Ultima Troca', 'Proxima Troca']].copy()
+    # Preparar dados para tabela (NOVA ESTRUTURA: sem Método/Auto Pay, com Tipo/Valor Filtro)
+    table_df = filtered_df[['Name', 'Status', 'Route Tech', 'Ultima Troca', 'Proxima Troca', 'Tipo Filtro', 'Valor Filtro']].copy()
 
-    # Adicionar dados extras
-    table_df['Ultima Troca'] = ''
-    table_df['Proxima Troca'] = ''
-    
-    for idx, row in table_df.iterrows():
-        customer_name = row['Name']
-        table_df.at[idx, 'Ultima Troca'] = data_processor.get_customer_extra_data(customer_name, "Ultima Troca")
-        table_df.at[idx, 'Proxima Troca'] = data_processor.get_customer_extra_data(customer_name, "Proxima Troca")
-    
-    # Guardar valores brutos para uso no modal (já com dados extras aplicados)
+    # Guardar valores brutos para uso no modal
     table_df['STATUS_RAW'] = table_df['Status']
     table_df['PISCINEIRO_RAW'] = table_df['Route Tech']
-    table_df['VALOR_RAW'] = table_df['Route Price']
-    table_df['METODO_RAW'] = table_df['Charge Method']
-    table_df['AUTO_RAW'] = table_df['Auto Charge']
+    table_df['TIPO_FILTRO_RAW'] = table_df['Tipo Filtro']
+    table_df['VALOR_FILTRO_RAW'] = table_df['Valor Filtro']
     table_df['ULTIMA_RAW'] = table_df['Ultima Troca']
     table_df['PROXIMA_RAW'] = table_df['Proxima Troca']
     
@@ -450,11 +454,10 @@ def update_dashboard(status_filter, tech_filter, month_filter, search_text, save
         'Name': 'CLIENTE',
         'Status': 'STATUS',
         'Route Tech': 'PISCINEIRO',
-        'Route Price': 'VALOR',
-        'Charge Method': 'MÉTODO',
-        'Auto Charge': 'AUTO PAY',
         'Ultima Troca': 'ÚLTIMA TROCA',
-        'Proxima Troca': 'PRÓXIMA TROCA'
+        'Proxima Troca': 'PRÓXIMA TROCA',
+        'Tipo Filtro': 'TIPO FILTRO',
+        'Valor Filtro': 'VALOR FILTRO'
     })
     
     # Formatar status com badges HTML
@@ -471,24 +474,15 @@ def update_dashboard(status_filter, tech_filter, month_filter, search_text, save
     
     table_df['STATUS'] = table_df['STATUS'].apply(format_status)
     
-    # Formatar valor
-    table_df['VALOR'] = table_df['VALOR'].apply(
-        lambda x: f'<span class="valor-mensal">${x:.0f}</span>' if pd.notna(x) and x > 0 else '<span class="valor-na">—</span>'
+    # Formatar valor do filtro
+    table_df['VALOR FILTRO'] = table_df['VALOR FILTRO'].apply(
+        lambda x: f'<span class="valor-mensal">R$ {x:.2f}</span>' if pd.notna(x) and x > 0 else '<span class="valor-na">—</span>'
     )
     
-    # Formatar Método
-    table_df['MÉTODO'] = table_df['MÉTODO'].apply(
-        lambda x: '<span class="metodo-badge">📅 ' + str(x) + '</span>' if pd.notna(x) and str(x) != '' else '<span class="metodo-na">—</span>'
+    # Formatar tipo de filtro
+    table_df['TIPO FILTRO'] = table_df['TIPO FILTRO'].apply(
+        lambda x: '<span class="metodo-badge">🔷 ' + str(x) + '</span>' if pd.notna(x) and str(x) != '' else '<span class="metodo-na">—</span>'
     )
-    
-    # Formatar Auto Pay com badges visuais
-    def format_auto_pay(value):
-        if pd.notna(value) and str(value).lower() in ['yes', 'sim', 'y']:
-            return '<span class="badge-autopay badge-yes">✓ SIM</span>'
-        else:
-            return '<span class="badge-autopay badge-no">✕ NÃO</span>'
-    
-    table_df['AUTO PAY'] = table_df['AUTO PAY'].apply(format_auto_pay)
     
     # Preencher valores vazios
     table_df['PISCINEIRO'] = table_df['PISCINEIRO'].fillna('—')
@@ -502,7 +496,7 @@ def update_dashboard(status_filter, tech_filter, month_filter, search_text, save
     table_data = table_df.to_dict('records')
     table_columns = [
         ({"name": col, "id": col, "presentation": "markdown"} 
-         if col in ['STATUS', 'VALOR', 'MÉTODO', 'AUTO PAY'] 
+         if col in ['STATUS', 'VALOR FILTRO', 'TIPO FILTRO'] 
          else {"name": col, "id": col})
         for col in table_df.columns if not col.endswith('_RAW') and col != 'INDEX_HIDDEN'
     ]
@@ -570,7 +564,7 @@ def export_csv(n_clicks, status_filter, tech_filter, month_filter, search_text):
             filtered_df['Name'].str.contains(search_text, case=False, na=False)
         ]
 
-    export_cols = ['Name', 'Status', 'Route Tech', 'Route Price', 'Charge Method', 'Auto Charge', 'Ultima Troca', 'Proxima Troca']
+    export_cols = ['Name', 'Status', 'Route Tech', 'Tipo Filtro', 'Valor Filtro', 'Ultima Troca', 'Proxima Troca']
     existing_cols = [c for c in export_cols if c in filtered_df.columns]
     df_export = filtered_df[existing_cols].copy()
 
@@ -586,9 +580,8 @@ def export_csv(n_clicks, status_filter, tech_filter, month_filter, search_text):
      Output("edit-name", "value"),
      Output("edit-status", "value"),
      Output("edit-tech", "value"),
-     Output("edit-route-price", "value"),
-     Output("edit-charge-method", "value"),
-     Output("edit-auto-pay", "value"),
+     Output("edit-tipo-filtro", "value"),
+     Output("edit-valor-filtro", "value"),
      Output("edit-ultima-troca", "value"),
      Output("edit-proxima-troca", "value")],
     [Input({"type": "edit-btn", "index": ALL}, "n_clicks"),
@@ -614,7 +607,7 @@ def toggle_modal(edit_btn_clicks, btn_new, btn_cancel, btn_save, table_data, is_
 
     # Fechar modal
     if "btn-cancel" in trigger_id or "save-button" in trigger_id:
-        return False, None, None, "", "", None, None, None, None, [], None, None
+        return False, None, None, "", "", None, None, None, None, None, None
 
     # Novo cliente
     if "btn-novo-cliente" in trigger_id:
@@ -626,9 +619,8 @@ def toggle_modal(edit_btn_clicks, btn_new, btn_cancel, btn_save, table_data, is_
             "",
             None,  # Status - será populado pelo dropdown
             "Não atribuído",
-            0,
-            CHARGE_METHOD_OPTIONS[0]['value'] if CHARGE_METHOD_OPTIONS else "Cash",
-            [],
+            None,  # Tipo filtro
+            0.00,  # Valor filtro
             None,
             None
         )
@@ -666,9 +658,8 @@ def toggle_modal(edit_btn_clicks, btn_new, btn_cancel, btn_save, table_data, is_
                 row.get("CLIENTE", ""),
                 row.get("STATUS_RAW"),
                 row.get("PISCINEIRO_RAW"),
-                row.get("VALOR_RAW"),
-                row.get("METODO_RAW"),
-                auto_val,
+                row.get("TIPO_FILTRO_RAW"),
+                row.get("VALOR_FILTRO_RAW", 0.00),
                 ultima_date,
                 proxima_date
             )
@@ -687,13 +678,12 @@ def toggle_modal(edit_btn_clicks, btn_new, btn_cancel, btn_save, table_data, is_
      State("edit-name", "value"),
      State("edit-status", "value"),
      State("edit-tech", "value"),
-     State("edit-route-price", "value"),
-     State("edit-charge-method", "value"),
-     State("edit-auto-pay", "value"),
+     State("edit-tipo-filtro", "value"),
+     State("edit-valor-filtro", "value"),
      State("edit-ultima-troca", "value"),
      State("edit-proxima-troca", "value")]
 )
-def save_customer_data(n_clicks, customer_name, edit_mode, name, status, tech, route_price, charge_method, auto_pay, ultima_troca, proxima_troca):
+def save_customer_data(n_clicks, customer_name, edit_mode, name, status, tech, tipo_filtro, valor_filtro, ultima_troca, proxima_troca):
     if not n_clicks:
         return ""
 
@@ -713,14 +703,14 @@ def save_customer_data(n_clicks, customer_name, edit_mode, name, status, tech, r
 
     status = status or 'Lead'
     tech = tech or 'Não atribuído'
-    charge_method = charge_method or 'Advance'
+    tipo_filtro = tipo_filtro or ''
 
     try:
-        route_price = float(route_price) if route_price not in [None, "", " "] else 0
+        valor_filtro = float(valor_filtro) if valor_filtro not in [None, "", " "] else 0.00
     except ValueError:
-        return error_toast("Valor da rota inválido.")
-    if route_price < 0:
-        return error_toast("Valor da rota não pode ser negativo.")
+        return error_toast("Valor do filtro inválido.")
+    if valor_filtro < 0:
+        return error_toast("Valor do filtro não pode ser negativo.")
 
     # Converter datas do formato ISO (YYYY-MM-DD) para DD/MM/YYYY
     def convert_iso_to_br(date_str):
@@ -736,8 +726,6 @@ def save_customer_data(n_clicks, customer_name, edit_mode, name, status, tech, r
     ultima_valid = convert_iso_to_br(ultima_troca)
     proxima_valid = convert_iso_to_br(proxima_troca)
 
-    auto_value = 'Yes' if auto_pay and 'yes' in auto_pay else 'No'
-
     # Recarregar dados para checar duplicidade
     data_processor.load_extra_data()
     data_processor.load_data()
@@ -749,18 +737,16 @@ def save_customer_data(n_clicks, customer_name, edit_mode, name, status, tech, r
             'Name': name,
             'Status': status,
             'Route Tech': tech,
-            'Route Price': route_price,
-            'Charge Method': charge_method,
-            'Auto Charge': auto_value,
+            'Tipo Filtro': tipo_filtro,
+            'Valor Filtro': valor_filtro,
             'Ultima Troca': ultima_valid,
             'Proxima Troca': proxima_valid
         })
         data_processor.log_action("create", name, {
             'Status': status,
             'Route Tech': tech,
-            'Route Price': route_price,
-            'Charge Method': charge_method,
-            'Auto Charge': auto_value,
+            'Tipo Filtro': tipo_filtro,
+            'Valor Filtro': valor_filtro,
             'Ultima Troca': ultima_valid,
             'Proxima Troca': proxima_valid
         })
@@ -774,17 +760,15 @@ def save_customer_data(n_clicks, customer_name, edit_mode, name, status, tech, r
         # Atualizar campos
         data_processor.update_customer_data(customer_name, "Status", status)
         data_processor.update_customer_data(customer_name, "Route Tech", tech)
-        data_processor.update_customer_data(customer_name, "Route Price", route_price)
-        data_processor.update_customer_data(customer_name, "Charge Method", charge_method)
-        data_processor.update_customer_data(customer_name, "Auto Charge", auto_value)
+        data_processor.update_customer_data(customer_name, "Tipo Filtro", tipo_filtro)
+        data_processor.update_customer_data(customer_name, "Valor Filtro", valor_filtro)
         data_processor.update_customer_data(customer_name, "Ultima Troca", ultima_valid)
         data_processor.update_customer_data(customer_name, "Proxima Troca", proxima_valid)
         data_processor.log_action("update", customer_name, {
             'Status': status,
             'Route Tech': tech,
-            'Route Price': route_price,
-            'Charge Method': charge_method,
-            'Auto Charge': auto_value,
+            'Tipo Filtro': tipo_filtro,
+            'Valor Filtro': valor_filtro,
             'Ultima Troca': ultima_valid,
             'Proxima Troca': proxima_valid
         })

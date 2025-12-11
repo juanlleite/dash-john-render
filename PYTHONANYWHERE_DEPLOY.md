@@ -34,8 +34,7 @@ git clone https://github.com/juanlleite/dash-john-render.git dashboard
 cd dashboard
 
 # Verificar arquivos
-ls -la
-
+![alt text](image.png)
 # Deve ver: app.py, models.py, database.py, etc.
 ```
 

@@ -1,0 +1,222 @@
+/* Calendário Customizado Completo */
+
+.custom-calendar-popup {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    padding: 16px;
+    min-width: 320px;
+    max-width: 350px;
+}
+
+.calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    gap: 8px;
+}
+
+.calendar-nav-btn {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #64748b;
+    transition: all 0.2s ease;
+}
+
+.calendar-nav-btn:hover {
+    background: #f8fafc;
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+
+.calendar-month-year-btn {
+    flex: 1;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1e293b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.calendar-month-year-btn:hover {
+    background: #f8fafc;
+    border-color: #3b82f6;
+    color: #3b82f6;
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 8px;
+}
+
+.calendar-weekday {
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    padding: 8px 0;
+}
+
+.calendar-days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 12px;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: white;
+    font-size: 0.9rem;
+    color: #334155;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.calendar-day:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.calendar-day.other-month {
+    color: #cbd5e1;
+    cursor: default;
+}
+
+.calendar-day.other-month:hover {
+    background: white;
+    border-color: transparent;
+}
+
+.calendar-day.today {
+    border-color: #3b82f6;
+    color: #3b82f6;
+    font-weight: 600;
+}
+
+.calendar-day.selected {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    font-weight: 600;
+    border-color: #3b82f6;
+}
+
+.calendar-day.selected:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+}
+
+.calendar-footer {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 12px;
+    display: flex;
+    justify-content: center;
+}
+
+.calendar-clear-btn {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 6px 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.calendar-clear-btn:hover {
+    background: #e2e8f0;
+    color: #475569;
+}
+
+/* Seletor de Ano/Mês */
+.year-month-selector {
+    background: #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    z-index: 10001;
+    min-width: 280px;
+}
+
+.year-selector {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.year-nav-btn {
+    background: #334155;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.year-nav-btn:hover {
+    background: #3b82f6;
+    transform: scale(1.05);
+}
+
+.year-display {
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    flex: 1;
+    text-align: center;
+}
+
+.month-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.month-btn {
+    background: #334155;
+    color: #e2e8f0;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 8px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-transform: lowercase;
+}
+
+.month-btn:hover {
+    background: #475569;
+}
+
+.month-btn.selected {
+    background: #3b82f6;
+    color: white;
+}

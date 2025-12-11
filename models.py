@@ -18,9 +18,9 @@ class Cliente(Base):
     nome = Column(String(255), nullable=False, unique=True, index=True)
     status = Column(String(50), nullable=False, default='Ativo', index=True)
     piscineiro = Column(String(100), default='Não atribuído', index=True)
-    valor_rota = Column(Numeric(10, 2), default=0.00)
-    metodo_cobranca = Column(String(50))
-    auto_pay = Column(Boolean, default=False)
+    valor_rota = Column(Numeric(10, 2), default=0.00)  # SERÁ ZERADO - agora é valor_filtro
+    tipo_filtro = Column(String(100))  # NOVO: Marca e modelo do filtro (ex: Hayward C750)
+    valor_filtro = Column(Numeric(10, 2), default=0.00)  # NOVO: Valor do filtro
     ultima_troca = Column(Date)
     proxima_troca = Column(Date, index=True)
     criado_em = Column(DateTime(timezone=True), server_default=func.now())
@@ -43,8 +43,8 @@ class Cliente(Base):
             'status': self.status,
             'piscineiro': self.piscineiro,
             'valor_rota': float(self.valor_rota) if self.valor_rota else 0.00,
-            'metodo_cobranca': self.metodo_cobranca,
-            'auto_pay': self.auto_pay,
+            'tipo_filtro': self.tipo_filtro,
+            'valor_filtro': float(self.valor_filtro) if self.valor_filtro else 0.00,
             'ultima_troca': self.ultima_troca.strftime('%d/%m/%Y') if self.ultima_troca else None,
             'proxima_troca': self.proxima_troca.strftime('%d/%m/%Y') if self.proxima_troca else None,
             'criado_em': self.criado_em.isoformat() if self.criado_em else None,
