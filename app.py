@@ -42,16 +42,22 @@ data_processor = PoolDataProcessor()
 # Opções para selects (cache)
 _cached_options = {}
 
-def get_status_options():
+def clear_cached_options():
+    """Limpa o cache de opções para forçar reload"""
+    global _cached_options
+    _cached_options = {}
+
+def get_status_options(force_reload=False):
     """Lazy loading de opções de status"""
-    if 'status' not in _cached_options:
+    if force_reload or 'status' not in _cached_options:
         _cached_options['status'] = [{"label": s, "value": s} for s in data_processor.get_statuses()]
     return _cached_options['status']
 
-def get_tech_options():
+def get_tech_options(force_reload=False):
     """Lazy loading de opções de técnicos"""
-    if 'tech' not in _cached_options:
+    if force_reload or 'tech' not in _cached_options:
         tech_names = data_processor.get_technicians()
+        print(f"🔍 DEBUG: Piscineiros encontrados: {tech_names}")  # DEBUG
         _cached_options['tech'] = {
             'edit': ([{"label": "Sem Piscineiro", "value": "Não atribuído"}] +
                     [{"label": f"🏊 {t}", "value": t} for t in tech_names]),
@@ -440,9 +446,10 @@ def update_dashboard(status_filter, tech_filter, month_filter, search_text, refr
     # Garantir que dados estejam carregados
     data_processor.load_extra_data()
     
-    # Popular opções dos dropdowns
-    status_opts = get_status_options()
-    tech_opts = get_tech_options()
+    # Popular opções dos dropdowns (forçar reload se refresh_trigger mudou)
+    force_reload = refresh_trigger and refresh_trigger > 0
+    status_opts = get_status_options(force_reload=force_reload)
+    tech_opts = get_tech_options(force_reload=force_reload)
     status_filter_opts = [{"label": "Todos os Status", "value": "Todos"}] + status_opts
     tech_filter_opts = tech_opts['filter']
     tech_edit_opts = tech_opts['edit']
