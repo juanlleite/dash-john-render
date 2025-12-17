@@ -14,7 +14,7 @@ def sync_piscineiros_from_postgres():
     
     # Configuração
     SQLITE_PATH = '/home/juanleite/dashboard/lacqua_azzurra.db' if os.path.exists('/home/juanleite') else 'lacqua_azzurra.db'
-    POSTGRES_URL = 'postgresql://lacqua_azzurra_db_user:Pzl3jEA1TaInwwbYMh67IEsvjIdUhpfg@dpg-d4snmj7pm1nc73c7dcdg-a.virginia-postgres.render.com/lacqua_azzurra_db'
+    POSTGRES_URL = 'postgresql://lacqua_azzurra_db_user:Pzl3jEA1TaInwwbYMh67IEsvjIdUhpfg@dpg-d4snmj7pm1nc73c7dcdg-a.virginia-postgres.render.com/lacqua_azzurra_db?sslmode=require'
     
     print("🔄 Sincronizando piscineiros PostgreSQL → SQLite...")
     print(f"📁 SQLite: {SQLITE_PATH}")
