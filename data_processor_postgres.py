@@ -64,8 +64,9 @@ class PoolDataProcessor:
             ])
     
     def load_extra_data(self):
-        """Compatibilidade - não usado mais (dados estão no PostgreSQL)"""
-        pass
+        """Carrega dados do PostgreSQL se ainda não carregados"""
+        if self.df is None or self.df.empty:
+            self.load_data()
     
     def save_extra_data(self):
         """Compatibilidade - não usado mais (dados estão no PostgreSQL)"""
@@ -170,13 +171,85 @@ class PoolDataProcessor:
                 session.commit()
                 logger.info(f"✅ Cliente '{customer_name}' atualizado: {field} = {value}")
                 
-                # Recarregar DataFrame
-                self.load_data()
+                # NÃO recarregar DataFrame aqui - será feito depois de todos os updates
                 
                 return True
                 
         except Exception as e:
             logger.error(f"❌ Erro ao atualizar cliente: {e}")
+            return False
+    
+    def update_customer_batch(self, customer_name, updates):
+        """
+        Atualiza múltiplos campos de um cliente em uma única transação
+        MUITO MAIS RÁPIDO que update_customer_data múltiplas vezes
+        
+        Args:
+            customer_name: Nome do cliente
+            updates: Dict com {campo: valor}
+        """
+        try:
+            with db.get_session() as session:
+                cliente = session.query(Cliente).filter_by(nome=customer_name).first()
+                
+                if not cliente:
+                    logger.warning(f"Cliente '{customer_name}' não encontrado")
+                    return False
+                
+                cliente_id = cliente.id
+                logger.info(f"✓ Cliente encontrado: ID={cliente_id}")
+                
+                # Mapear campos
+                field_mapping = {
+                    'Status': 'status',
+                    'Route Tech': 'piscineiro',
+                    'Route Price': 'valor_rota',
+                    'Tipo Filtro': 'tipo_filtro',
+                    'Valor Filtro': 'valor_filtro',
+                    'Ultima Troca': 'ultima_troca',
+                    'Proxima Troca': 'proxima_troca'
+                }
+                
+                # Coletar valores antigos ANTES de modificar
+                old_values = {}
+                for field in updates.keys():
+                    db_field = field_mapping.get(field, field.lower().replace(' ', '_'))
+                    old_values[db_field] = getattr(cliente, db_field, None)
+                
+                # Aplicar todas as atualizações
+                for field, value in updates.items():
+                    db_field = field_mapping.get(field, field.lower().replace(' ', '_'))
+                    old_value = old_values[db_field]
+                    
+                    # Processar valor
+                    if field == 'Route Tech':
+                        value = self._normalize_tech(value)
+                    elif field in ['Route Price', 'Valor Filtro']:
+                        value = Decimal(str(value)) if value else Decimal('0.00')
+                    elif field in ['Ultima Troca', 'Proxima Troca']:
+                        value = self._parse_date(value)
+                    
+                    # Atualizar
+                    setattr(cliente, db_field, value)
+                
+                # Commit ANTES de log para não perder a sessão
+                session.commit()
+                logger.info(f"✅ Cliente '{customer_name}' atualizado (batch): {len(updates)} campos - COMMIT EXECUTADO")
+                
+                # Atualizar DataFrame em memória para evitar reload completo
+                if self.df is not None:
+                    mask = self.df['Name'] == customer_name
+                    if mask.any():
+                        for field, value in updates.items():
+                            if field in self.df.columns:
+                                self.df.loc[mask, field] = value
+                
+                return True
+                
+        except Exception as e:
+            logger.error(f"❌ Erro ao atualizar cliente (batch): {e}")
+            import traceback
+            logger.error(traceback.format_exc())
             return False
     
     def get_customer_extra_data(self, customer_name, field):
@@ -248,7 +321,7 @@ class PoolDataProcessor:
             return ['Ativo', 'Ativo sem Rota', 'Inativo', 'Lead']
     
     def get_technicians(self):
-        """Retorna lista de piscineiros únicos"""
+        """Retorna lista de piscineiros únicos (filtrando múltiplos piscineiros separados por vírgula)"""
         try:
             with db.get_session() as session:
                 techs = session.query(Cliente.piscineiro).distinct().filter(
@@ -256,9 +329,27 @@ class PoolDataProcessor:
                     Cliente.piscineiro != '',
                     Cliente.piscineiro != 'Não atribuído'
                 ).all()
-                tech_list = [t[0] for t in techs if t[0]]
+                
+                # Extrair piscineiros individuais (casos com vírgula)
+                tech_set = set()
+                for t in techs:
+                    if t[0]:
+                        # Se contém vírgula, separar e adicionar individualmente
+                        if ',' in t[0]:
+                            for name in t[0].split(','):
+                                # Normalizar: strip espaços, remover pontos, strip novamente
+                                normalized = name.strip().rstrip('.').strip()
+                                if normalized:
+                                    tech_set.add(normalized)
+                        else:
+                            # Normalizar: strip espaços, remover pontos, strip novamente
+                            normalized = t[0].strip().rstrip('.').strip()
+                            if normalized:
+                                tech_set.add(normalized)
+                
+                tech_list = sorted(list(tech_set))
                 logger.info(f"✅ Piscineiros encontrados: {tech_list}")
-                return sorted(tech_list)
+                return tech_list
         except Exception as e:
             logger.error(f"❌ Erro ao buscar piscineiros: {e}")
             return []
@@ -361,11 +452,11 @@ class PoolDataProcessor:
             logger.error(f"❌ Erro ao registrar auditoria: {e}")
     
     def get_monthly_revenue(self):
-        """Calcula faturamento mensal total baseado em clientes ativos"""
+        """Calcula faturamento mensal total baseado em clientes ativos e valor do filtro"""
         try:
             with db.get_session() as session:
-                # Somar valor_rota de todos os clientes ativos
-                total = session.query(func.sum(Cliente.valor_rota)).filter(
+                # Somar valor_filtro de todos os clientes ativos (valor_rota foi zerado)
+                total = session.query(func.sum(Cliente.valor_filtro)).filter(
                     or_(
                         Cliente.status == 'Ativo',
                         Cliente.status == 'Active (routed)'
@@ -383,7 +474,10 @@ class PoolDataProcessor:
         try:
             with db.get_session() as session:
                 count = session.query(Cliente).filter(
-                    Cliente.status == 'Ativo'
+                    or_(
+                        Cliente.status == 'Ativo',
+                        Cliente.status == 'Active (routed)'
+                    )
                 ).count()
                 
                 return count

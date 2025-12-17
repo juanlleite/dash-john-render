@@ -164,23 +164,23 @@ app.layout = dbc.Container([
         dbc.Col([
             dcc.Dropdown(
                 id="status-filter",
-                options=[],  # Será populado via callback
+                options=[{"label": "Todos os Status", "value": "Todos"}],
                 value="Todos",
                 clearable=False,
                 searchable=False,
                 className="status-dropdown",
-                placeholder="Carregando..."
+                placeholder="Status"
             )
         ], md=3),
         dbc.Col([
             dcc.Dropdown(
                 id="tech-filter",
-                options=[],  # Será populado via callback
+                options=[{"label": "Todos os Piscineiros", "value": "Todos"}],
                 value="Todos",
                 clearable=False,
                 searchable=False,
                 className="tech-dropdown",
-                placeholder="Carregando..."
+                placeholder="Piscineiro"
             )
         ], md=3),
         dbc.Col([
@@ -304,17 +304,32 @@ app.layout = dbc.Container([
             dbc.Row([
                 dbc.Col([
                     html.Label("Nome do Cliente", className="form-label"),
-                    dbc.Input(id="edit-name", type="text", placeholder="Nome")
+                    dbc.Input(
+                        id="edit-name", 
+                        type="text", 
+                        placeholder="Nome",
+                        style={'fontSize': '15px', 'height': '46px'}
+                    )
                 ], md=12)
             ], className="mb-3"),
             dbc.Row([
                 dbc.Col([
                     html.Label("Status", className="form-label"),
-                    dcc.Dropdown(id="edit-status", options=[], placeholder="Carregando...")
+                    dcc.Dropdown(
+                        id="edit-status", 
+                        options=[], 
+                        placeholder="Carregando...",
+                        style={'fontSize': '15px'}
+                    )
                 ], md=6),
                 dbc.Col([
                     html.Label("Piscineiro", className="form-label"),
-                    dcc.Dropdown(id="edit-tech", options=[], placeholder="Carregando...")
+                    dcc.Dropdown(
+                        id="edit-tech", 
+                        options=[], 
+                        placeholder="Carregando...",
+                        style={'fontSize': '15px'}
+                    )
                 ], md=6)
             ], className="mb-3"),
             dbc.Row([
@@ -323,34 +338,42 @@ app.layout = dbc.Container([
                     dcc.Dropdown(
                         id="edit-tipo-filtro",
                         options=[
-                            {"label": "━━━ HAYWARD ━━━", "value": "", "disabled": True},
-                            {"label": "C750", "value": "Hayward C750"},
-                            {"label": "C900", "value": "Hayward C900"},
-                            {"label": "C1100", "value": "Hayward C1100"},
-                            {"label": "C1200", "value": "Hayward C1200"},
-                            {"label": "C1750", "value": "Hayward C1750"},
-                            {"label": "C100s", "value": "Hayward C100s"},
-                            {"label": "C150s", "value": "Hayward C150s"},
-                            {"label": "C200s", "value": "Hayward C200s"},
-                            {"label": "━━━ PENTAIR ━━━", "value": "", "disabled": True},
-                            {"label": "Cc100", "value": "Pentair Cc100"},
-                            {"label": "Cc150", "value": "Pentair Cc150"},
-                            {"label": "Cc200", "value": "Pentair Cc200"},
-                            {"label": "━━━ JANDY ━━━", "value": "", "disabled": True},
-                            {"label": "Cs100", "value": "Jandy Cs100"},
-                            {"label": "Cs150", "value": "Jandy Cs150"},
-                            {"label": "Cs200", "value": "Jandy Cs200"},
-                            {"label": "Cs250", "value": "Jandy Cs250"},
-                            {"label": "━━━ OUTROS ━━━", "value": "", "disabled": True}
+                            {"label": "━━━━━━ HAYWARD ━━━━━━", "value": "", "disabled": True},
+                            {"label": "  Hayward C750", "value": "Hayward C750"},
+                            {"label": "  Hayward C900", "value": "Hayward C900"},
+                            {"label": "  Hayward C1100", "value": "Hayward C1100"},
+                            {"label": "  Hayward C1200", "value": "Hayward C1200"},
+                            {"label": "  Hayward C1750", "value": "Hayward C1750"},
+                            {"label": "  Hayward C100s", "value": "Hayward C100s"},
+                            {"label": "  Hayward C150s", "value": "Hayward C150s"},
+                            {"label": "  Hayward C200s", "value": "Hayward C200s"},
+                            {"label": "━━━━━━ PENTAIR ━━━━━━", "value": "", "disabled": True},
+                            {"label": "  Pentair Cc100", "value": "Pentair Cc100"},
+                            {"label": "  Pentair Cc150", "value": "Pentair Cc150"},
+                            {"label": "  Pentair Cc200", "value": "Pentair Cc200"},
+                            {"label": "━━━━━━ JANDY ━━━━━━", "value": "", "disabled": True},
+                            {"label": "  Jandy Cs100", "value": "Jandy Cs100"},
+                            {"label": "  Jandy Cs150", "value": "Jandy Cs150"},
+                            {"label": "  Jandy Cs200", "value": "Jandy Cs200"},
+                            {"label": "  Jandy Cs250", "value": "Jandy Cs250"},
+                            {"label": "━━━━━━ OUTROS ━━━━━━", "value": "", "disabled": True}
                         ],
                         placeholder="Selecione ou digite",
                         searchable=True,
-                        clearable=True
+                        clearable=True,
+                        style={'fontSize': '15px'}
                     )
                 ], md=6),
                 dbc.Col([
                     html.Label("Valor do Filtro (R$)", className="form-label"),
-                    dbc.Input(id="edit-valor-filtro", type="number", min=0, step=0.01, placeholder="0.00")
+                    dbc.Input(
+                        id="edit-valor-filtro", 
+                        type="number", 
+                        min=0, 
+                        step=0.01, 
+                        placeholder="0.00",
+                        style={'fontSize': '15px', 'height': '46px'}
+                    )
                 ], md=6)
             ], className="mb-3"),
             dbc.Row([
@@ -378,11 +401,12 @@ app.layout = dbc.Container([
             dbc.Button("Cancelar", id="btn-cancel", className="me-2", color="secondary"),
             dbc.Button("Salvar", id="save-button", color="primary")
         ])
-    ], id="modal-edit", is_open=False, size="lg"),
+    ], id="modal-edit", is_open=False, size="xl"),
     
     # Stores
     dcc.Store(id="selected-customer-store"),
     dcc.Store(id="edit-mode-store"),
+    dcc.Store(id="refresh-trigger", data=0),
     dcc.Download(id="export-download"),
     html.Div(id="save-feedback")
     
@@ -407,17 +431,16 @@ app.layout = dbc.Container([
      Input("tech-filter", "value"),
      Input("month-filter", "value"),
      Input("search-input", "value"),
-     Input("save-button", "n_clicks"),
+     Input("refresh-trigger", "data"),
      Input("customers-table", "page_current"),
      Input("customers-table", "page_size"),
      Input("customers-table", "sort_by")]
 )
-def update_dashboard(status_filter, tech_filter, month_filter, search_text, save_clicks, page_current, page_size, sort_by):
-    # Lazy loading - carregar dados apenas quando callback executa
+def update_dashboard(status_filter, tech_filter, month_filter, search_text, refresh_trigger, page_current, page_size, sort_by):
+    # Garantir que dados estejam carregados
     data_processor.load_extra_data()
-    data_processor.load_data()
     
-    # Popular opções dos dropdowns (lazy loading)
+    # Popular opções dos dropdowns
     status_opts = get_status_options()
     tech_opts = get_tech_options()
     status_filter_opts = [{"label": "Todos os Status", "value": "Todos"}] + status_opts
@@ -587,27 +610,32 @@ def export_csv(n_clicks, status_filter, tech_filter, month_filter, search_text):
     [Input({"type": "edit-btn", "index": ALL}, "n_clicks"),
      Input("btn-novo-cliente", "n_clicks"),
      Input("btn-cancel", "n_clicks"),
-     Input("save-button", "n_clicks")],
+     Input("refresh-trigger", "data")],
     [State("customers-table", "data"),
      State("modal-edit", "is_open"),
      State("selected-customer-store", "data"),
      State("edit-mode-store", "data")],
     prevent_initial_call=True
 )
-def toggle_modal(edit_btn_clicks, btn_new, btn_cancel, btn_save, table_data, is_open, selected_customer, edit_mode):
+def toggle_modal(edit_btn_clicks, btn_new, btn_cancel, refresh_trigger, table_data, is_open, selected_customer, edit_mode):
     ctx = callback_context
     if not ctx.triggered:
         return no_update
     
     trigger_id = ctx.triggered[0]["prop_id"]
+    trigger_value = ctx.triggered[0]["value"]
     
-    # Ignorar se nenhum botão foi realmente clicado
-    if not any([btn_new, btn_cancel, btn_save]) and not any(edit_btn_clicks):
+    # Se o valor do trigger é None ou 0, ignorar (não foi realmente clicado)
+    if trigger_value is None or trigger_value == 0:
         return no_update
-
-    # Fechar modal
-    if "btn-cancel" in trigger_id or "save-button" in trigger_id:
-        return False, None, None, "", "", None, None, None, None, None, None
+    
+    # Fechar modal após salvar (refresh-trigger incrementou)
+    if "refresh-trigger" in trigger_id and refresh_trigger and refresh_trigger > 0:
+        return (False, None, None, "", "", None, None, None, None, None, None)
+    
+    # Fechar modal (cancelar)
+    if "btn-cancel" in trigger_id:
+        return (False, None, None, "", "", None, None, None, None, None, None)
 
     # Novo cliente
     if "btn-novo-cliente" in trigger_id:
@@ -668,10 +696,10 @@ def toggle_modal(edit_btn_clicks, btn_new, btn_cancel, btn_save, table_data, is_
     return no_update
 
 
-# Salvar alterações (feedback apenas; fechamento do modal é feito pelo callback de toggle)
-# Salvar alterações (feedback apenas; fechamento do modal é feito pelo callback de toggle)
+# Salvar alterações e disparar refresh automático
 @app.callback(
-    Output("save-feedback", "children"),
+    [Output("save-feedback", "children"),
+     Output("refresh-trigger", "data")],
     [Input("save-button", "n_clicks")],
     [State("selected-customer-store", "data"),
      State("edit-mode-store", "data"),
@@ -681,11 +709,14 @@ def toggle_modal(edit_btn_clicks, btn_new, btn_cancel, btn_save, table_data, is_
      State("edit-tipo-filtro", "value"),
      State("edit-valor-filtro", "value"),
      State("edit-ultima-troca", "value"),
-     State("edit-proxima-troca", "value")]
+     State("edit-proxima-troca", "value"),
+     State("refresh-trigger", "data")],
+    prevent_initial_call=True
 )
-def save_customer_data(n_clicks, customer_name, edit_mode, name, status, tech, tipo_filtro, valor_filtro, ultima_troca, proxima_troca):
-    if not n_clicks:
-        return ""
+def save_customer_data(n_clicks, customer_name, edit_mode, name, status, tech, tipo_filtro, valor_filtro, ultima_troca, proxima_troca, refresh_trigger):
+    import logging
+    logger = logging.getLogger(__name__)
+    logger.info(f"💾 Salvando: {customer_name}")
 
     def error_toast(msg):
         return dbc.Toast(
@@ -695,11 +726,11 @@ def save_customer_data(n_clicks, customer_name, edit_mode, name, status, tech, t
             duration=3500,
             is_open=True,
             style={"position": "fixed", "top": 20, "right": 20, "zIndex": 9999}
-        )
+        ), (refresh_trigger or 0)
 
     name = (name or "").strip()
     if not name:
-        return error_toast("Informe o nome do cliente." )
+        return error_toast("Informe o nome do cliente.")
 
     status = status or 'Lead'
     tech = tech or 'Não atribuído'
@@ -726,10 +757,7 @@ def save_customer_data(n_clicks, customer_name, edit_mode, name, status, tech, t
     ultima_valid = convert_iso_to_br(ultima_troca)
     proxima_valid = convert_iso_to_br(proxima_troca)
 
-    # Recarregar dados para checar duplicidade
-    data_processor.load_extra_data()
-    data_processor.load_data()
-
+    # Verificar duplicidade sem recarregar todos os dados
     if edit_mode == "create" or not customer_name:
         if data_processor.name_exists(name):
             return error_toast("Já existe um cliente com esse nome.")
@@ -742,7 +770,6 @@ def save_customer_data(n_clicks, customer_name, edit_mode, name, status, tech, t
             'Ultima Troca': ultima_valid,
             'Proxima Troca': proxima_valid
         })
-        # Log action já é feito dentro de add_customer
     else:
         # Renomear se necessário
         if name != customer_name and data_processor.name_exists(name):
@@ -750,25 +777,33 @@ def save_customer_data(n_clicks, customer_name, edit_mode, name, status, tech, t
         if name != customer_name:
             data_processor.rename_customer(customer_name, name)
             customer_name = name
-        # Atualizar campos
-        data_processor.update_customer_data(customer_name, "Status", status)
-        data_processor.update_customer_data(customer_name, "Route Tech", tech)
-        data_processor.update_customer_data(customer_name, "Tipo Filtro", tipo_filtro)
-        data_processor.update_customer_data(customer_name, "Valor Filtro", valor_filtro)
-        data_processor.update_customer_data(customer_name, "Ultima Troca", ultima_valid)
-        data_processor.update_customer_data(customer_name, "Proxima Troca", proxima_valid)
-        # Log action já é feito dentro de update_customer_data para cada campo
+        
+        # Atualizar todos os campos em uma única transação (BATCH UPDATE - MUITO MAIS RÁPIDO)
+        updates = {
+            "Status": status,
+            "Route Tech": tech,
+            "Tipo Filtro": tipo_filtro,
+            "Valor Filtro": valor_filtro,
+            "Ultima Troca": ultima_valid,
+            "Proxima Troca": proxima_valid
+        }
+        
+        result = data_processor.update_customer_batch(customer_name, updates)
+        logger.info(f"✅ Salvo: {customer_name} ({len(updates)} campos)")
 
     toast = dbc.Toast(
-        "Dados salvos com sucesso!",
+        "✓ Salvo!",
         header="Sucesso",
         icon="success",
-        duration=2500,
+        duration=1500,
         is_open=True,
         style={"position": "fixed", "top": 20, "right": 20, "zIndex": 9999}
     )
+    
+    # Incrementar trigger para forçar atualização da tabela
+    new_trigger = (refresh_trigger or 0) + 1
 
-    return toast
+    return toast, new_trigger
 
 
 if __name__ == "__main__":

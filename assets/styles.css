@@ -417,7 +417,8 @@ body {
     display: flex !important;
     align-items: center !important;
     min-height: calc(100% - 1rem) !important;
-    max-width: 650px !important;
+    max-width: 1200px !important;
+    width: 95% !important;
 }
 
 .modal-content {
@@ -426,6 +427,7 @@ body {
     box-shadow: 0 20px 40px rgba(15, 23, 42, 0.18) !important;
     max-height: 90vh !important;
     overflow-y: auto !important;
+    width: 100% !important;
 }
 
 .modal-header {
@@ -436,10 +438,24 @@ body {
     border-bottom: none !important;
 }
 
+/* Estilos específicos para modal-edit */
+#modal-edit .modal-dialog {
+    max-width: 1200px !important;
+    width: 95vw !important;
+}
+
+#modal-edit .modal-content {
+    width: 100% !important;
+}
+
+#modal-edit .modal-body {
+    padding: 2.5rem 4rem !important;
+}
+
 .modal-title { font-size: 1.2rem; font-weight: 700; }
 
 .modal-body { 
-    padding: 1.2rem 1.5rem !important;
+    padding: 2rem 3.5rem !important;
     overflow-x: hidden !important;
 }
 
@@ -449,28 +465,29 @@ body {
 }
 
 .form-label {
-    font-size: 0.9rem;
+    font-size: 1rem;
     font-weight: 600;
     color: #475569;
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.6rem;
 }
 
 .mb-3 {
-    margin-bottom: 0.8rem !important;
+    margin-bottom: 1.5rem !important;
 }
 
 /* Date Input Customization - Estilo Nativo HTML5 */
 .date-input-custom {
     width: 100%;
-    padding: 0.65rem 1rem !important;
+    padding: 0.85rem 1.2rem !important;
     border: 1px solid #e2e8f0 !important;
     border-radius: 10px !important;
     background-color: white !important;
     color: #334155 !important;
     font-family: 'Inter', sans-serif !important;
-    font-size: 0.95rem !important;
+    font-size: 1rem !important;
     transition: all 0.2s ease !important;
     cursor: pointer !important;
+    height: 46px !important;
 }
 
 .date-input-custom::-webkit-calendar-picker-indicator {
@@ -644,9 +661,10 @@ body {
 .form-control {
     border: 1px solid #e2e8f0 !important;
     border-radius: 10px !important;
-    padding: 0.7rem 1rem !important;
-    font-size: 0.95rem !important;
+    padding: 0.85rem 1.2rem !important;
+    font-size: 1rem !important;
     transition: all 0.2s ease !important;
+    height: 46px !important;
 }
 
 .form-control:focus {
@@ -693,3 +711,19 @@ body {
 .col, .col-md-3, .col-md-4, .col-md-5, .col-md-8 { padding-left: 0.65rem !important; padding-right: 0.65rem !important; }
 .mb-3 { margin-bottom: 1.5rem !important; }
 .mb-4 { margin-bottom: 2rem !important; }
+
+/* Estilos para dropdowns do modal */
+#modal-edit .Select-control {
+    min-height: 46px !important;
+    font-size: 1rem !important;
+}
+
+#modal-edit .Select-value-label,
+#modal-edit .Select-placeholder {
+    font-size: 1rem !important;
+    padding: 8px 12px !important;
+}
+
+#modal-edit .dropdown .Select-control {
+    min-height: 46px !important;
+}
