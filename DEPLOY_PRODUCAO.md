@@ -1,13 +1,26 @@
-# 🚀 Deploy para Produção - PythonAnywhere
+quer# 🚀 Deploy para Produção - PythonAnywhere
 
 ## ✅ Preparação Local
 
-### 1. Atualizar .env.pythonanywhere com PostgreSQL
-```bash
-DATABASE_URL=postgresql://lacqua_azzurra_db_user:Pzl3jEA1TaInwwbYMh67IEsvjIdUhpfg@dpg-d4snmj7pm1nc73c7dcdg-a.virginia-postgres.render.com/lacqua_azzurra_db
-```
+### 1. Escolher qual banco usar
 
-### 2. Testar localmente com .env.pythonanywhere
+**Opção A: SQLite PythonAnywhere (Recomendado para FREE)** ✅
+- Mais rápido (sem latência de rede)
+- Sem hibernação
+- Banco isolado (produção separada do dev)
+- Precisa migração inicial
+
+**Opção B: PostgreSQL Render (Compartilhado)**
+- Mesmo banco que dev local
+- Dados já atualizados
+- Hibernação em plano FREE
+- Latência de rede
+
+### 2. Migrar banco SQLite no PythonAnywhere
+
+Veja seção **MIGRAÇÃO SQLITE** abaixo.
+
+### 3. Testar localmente com .env.pythonanywhere
 ```powershell
 # Renomear .env temporariamente
 mv .env .env.local
@@ -24,7 +37,35 @@ mv .env.local .env
 
 ---
 
-## 📦 Deploy no PythonAnywhere
+## � MIGRAÇÃO SQLITE (IMPORTANTE!)
+
+### Execute ANTES do primeiro deploy:
+
+```bash
+cd ~/dashboard
+python3 migrate_pythonanywhere.py
+```
+
+Este script vai:
+- ✅ Criar backup automático do banco
+- ✅ Adicionar colunas `tipo_filtro` e `valor_filtro`
+- ✅ Migrar dados de `metodo_cobranca` para `tipo_filtro`
+- ✅ Zerar `valor_rota` (nova lógica de cobrança)
+- ✅ Normalizar piscineiros (remover duplicatas)
+- ✅ Atribuir "Não atribuído" para clientes sem piscineiro
+- ✅ Exibir estatísticas completas
+
+**Saída esperada:**
+```
+✅ Migração concluída com sucesso!
+📊 Total de clientes: XXX
+   Clientes com tipo_filtro: XXX
+   Clientes com valor_filtro: XXX
+```
+
+---
+
+## �📦 Deploy no PythonAnywhere
 
 ### PASSO 1: Acessar Console do PythonAnywhere
 1. Acesse: https://www.pythonanywhere.com/
@@ -48,10 +89,7 @@ nano .env
 
 Cole este conteúdo:
 ```
-DATABASE_URL=postgresql://lacqua_azzurra_db_user:Pzl3jEA1TaInwwbYMh67IEsvjIdUhpfg@dpg-d4snmj7pm1nc73c7dcdg-a.virginia-postgres.render.com/lacqua_azzurra_db
-DASH_DEBUG=False
-HOST=0.0.0.0
-PORT=8000
+DATABASE_URL=sqlite:////home/juanleite/dashboard/lacqua_azzurra.db
 ```
 
 Salvar: `CTRL+O` → `ENTER` → `CTRL+X`
