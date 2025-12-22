@@ -279,7 +279,7 @@ class PoolDataProcessor:
             logger.error(f"❌ Erro ao obter dados do cliente: {e}")
             return ''
     
-    def get_filtered_data(self, status_filter=None, tech_filter=None, month_filter=None):
+    def get_filtered_data(self, status_filter=None, tech_filter=None, last_change_month=None, next_change_month=None):
         """Filtra dados baseado em critérios"""
         # Recarregar dados do banco
         self.load_data()
@@ -296,18 +296,31 @@ class PoolDataProcessor:
         if tech_filter and tech_filter != 'Todos':
             df_filtered = df_filtered[df_filtered['Route Tech'] == tech_filter]
         
-        if month_filter and month_filter != 'Todos':
-            # Filtrar por mês da próxima troca
-            def filter_by_month(date_str):
+        # Filtrar por mês da ÚLTIMA troca
+        if last_change_month and last_change_month != 'Todos':
+            def filter_last_month(date_str):
                 if not date_str:
                     return False
                 try:
                     dt = datetime.strptime(date_str, '%d/%m/%Y')
-                    return dt.strftime('%m/%Y') == month_filter
+                    return str(dt.month) == str(last_change_month)
                 except:
                     return False
             
-            df_filtered = df_filtered[df_filtered['Proxima Troca'].apply(filter_by_month)]
+            df_filtered = df_filtered[df_filtered['Ultima Troca'].apply(filter_last_month)]
+        
+        # Filtrar por mês da PRÓXIMA troca
+        if next_change_month and next_change_month != 'Todos':
+            def filter_next_month(date_str):
+                if not date_str:
+                    return False
+                try:
+                    dt = datetime.strptime(date_str, '%d/%m/%Y')
+                    return str(dt.month) == str(next_change_month)
+                except:
+                    return False
+            
+            df_filtered = df_filtered[df_filtered['Proxima Troca'].apply(filter_next_month)]
         
         return df_filtered
     

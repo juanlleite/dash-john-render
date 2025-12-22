@@ -177,7 +177,7 @@ app.layout = dbc.Container([
                 className="status-dropdown",
                 placeholder="Status"
             )
-        ], md=3),
+        ], md=2),
         dbc.Col([
             dcc.Dropdown(
                 id="tech-filter",
@@ -188,12 +188,12 @@ app.layout = dbc.Container([
                 className="tech-dropdown",
                 placeholder="Piscineiro"
             )
-        ], md=3),
+        ], md=2),
         dbc.Col([
             dcc.Dropdown(
-                id="month-filter",
+                id="last-change-filter",
                 options=[
-                    {"label": "Todos os Meses", "value": "Todos"},
+                    {"label": "📅 Última Troca: Todos", "value": "Todos"},
                     {"label": "Jan (01) - Janeiro", "value": "1"},
                     {"label": "Fev (02) - Fevereiro", "value": "2"},
                     {"label": "Mar (03) - Março", "value": "3"},
@@ -210,7 +210,32 @@ app.layout = dbc.Container([
                 value="Todos",
                 clearable=False,
                 searchable=False,
-                placeholder="Mês",
+                placeholder="Última Troca",
+                className="month-dropdown"
+            )
+        ], md=2),
+        dbc.Col([
+            dcc.Dropdown(
+                id="next-change-filter",
+                options=[
+                    {"label": "📆 Próxima Troca: Todos", "value": "Todos"},
+                    {"label": "Jan (01) - Janeiro", "value": "1"},
+                    {"label": "Fev (02) - Fevereiro", "value": "2"},
+                    {"label": "Mar (03) - Março", "value": "3"},
+                    {"label": "Abr (04) - Abril", "value": "4"},
+                    {"label": "Mai (05) - Maio", "value": "5"},
+                    {"label": "Jun (06) - Junho", "value": "6"},
+                    {"label": "Jul (07) - Julho", "value": "7"},
+                    {"label": "Ago (08) - Agosto", "value": "8"},
+                    {"label": "Set (09) - Setembro", "value": "9"},
+                    {"label": "Out (10) - Outubro", "value": "10"},
+                    {"label": "Nov (11) - Novembro", "value": "11"},
+                    {"label": "Dez (12) - Dezembro", "value": "12"}
+                ],
+                value="Todos",
+                clearable=False,
+                searchable=False,
+                placeholder="Próxima Troca",
                 className="month-dropdown"
             )
         ], md=2)
@@ -435,14 +460,15 @@ app.layout = dbc.Container([
      Output("edit-tech", "options")],
     [Input("status-filter", "value"),
      Input("tech-filter", "value"),
-     Input("month-filter", "value"),
+     Input("last-change-filter", "value"),
+     Input("next-change-filter", "value"),
      Input("search-input", "value"),
      Input("refresh-trigger", "data"),
      Input("customers-table", "page_current"),
      Input("customers-table", "page_size"),
      Input("customers-table", "sort_by")]
 )
-def update_dashboard(status_filter, tech_filter, month_filter, search_text, refresh_trigger, page_current, page_size, sort_by):
+def update_dashboard(status_filter, tech_filter, last_change_month, next_change_month, search_text, refresh_trigger, page_current, page_size, sort_by):
     # Garantir que dados estejam carregados
     data_processor.load_extra_data()
     
@@ -460,7 +486,12 @@ def update_dashboard(status_filter, tech_filter, month_filter, search_text, refr
     future_maintenance = data_processor.get_future_maintenance_count()
     
     # Filtrar dados
-    filtered_df = data_processor.get_filtered_data(status_filter, tech_filter, month_filter)
+    filtered_df = data_processor.get_filtered_data(
+        status_filter, 
+        tech_filter, 
+        last_change_month=last_change_month, 
+        next_change_month=next_change_month
+    )
     
     # Busca por texto
     if search_text and search_text.strip():
