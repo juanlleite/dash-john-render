@@ -609,16 +609,22 @@ def update_dashboard(status_filter, tech_filter, last_change_month, next_change_
     [Input("btn-export", "n_clicks")],
     [State("status-filter", "value"),
      State("tech-filter", "value"),
-     State("month-filter", "value"),
+     State("last-change-filter", "value"),
+     State("next-change-filter", "value"),
      State("search-input", "value")]
 )
-def export_csv(n_clicks, status_filter, tech_filter, month_filter, search_text):
+def export_csv(n_clicks, status_filter, tech_filter, last_change_month, next_change_month, search_text):
     if not n_clicks:
         return no_update
 
     data_processor.load_extra_data()
     data_processor.load_data()
-    filtered_df = data_processor.get_filtered_data(status_filter, tech_filter, month_filter)
+    filtered_df = data_processor.get_filtered_data(
+        status_filter, 
+        tech_filter, 
+        last_change_month=last_change_month, 
+        next_change_month=next_change_month
+    )
 
     if search_text and search_text.strip():
         filtered_df = filtered_df[
